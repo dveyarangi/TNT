@@ -1,0 +1,66 @@
+<project name="tnt-web-server" default="dist" basedir=".">
+	  <description>
+	      simple example build file
+	  </description>
+	<!-- set global properties for this build -->
+	<property name="name" value="tnt-game-server"/>
+		
+	<buildnumber file="build.number"/>
+	<property name="version.number" value="1.0"/>
+
+	
+	<property name="src.dir"       location="src"/>
+	<property name="lib.dir"       location="lib"/>
+	<property name="etc.dir"       location="etc"/>
+	<property name="build.dir"     location="build"/>
+	<property name="classes.dir"   location="${build.dir}/classes"/>
+	<property name="dist.dir"      location="${build.dir}/${name}_b${build.number}"/>
+	<property name="dist.lib.dir"  location="${dist.dir}/lib"/>
+			
+	<target name="init">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
+	    <copy todir="${dist.lib.dir}">
+	        <fileset dir="${lib.dir}">
+ 				<include name="**/*.jar"/>
+ 				<exclude name="*test*"/>
+	        </fileset>
+	    </copy>
+	    <copy todir="${dist.dir}">
+	        <fileset dir="${etc.dir}">
+ 				<include name="**/*"/>
+ 				<exclude name="*test*"/>
+	        </fileset>
+	    </copy>
+	    		
+	</target>
+	
+	<target name="compile" depends="init">
+   		<delete dir="${classes.dir}" />
+	    <mkdir dir="${classes.dir}" />
+	    <javac srcdir="${src.dir}" destdir="${classes.dir}" target="1.6" source="1.6">
+	    	<classpath>
+	    		<fileset dir="${lib.dir}" />
+	    	</classpath>
+		</javac>
+	</target>
+	
+	<target name="dist" depends="compile">
+		<property name="jar.name" value="${name}.jar" />
+    
+		<property name="jar.version" value="${major.minor}.${build.number}" />
+		
+		<jar destfile="${dist.lib.dir}/${jar.name}" basedir="${classes.dir}" />
+		
+	   	<!--signjar jar="${jar.name}" alias="jarkey" keystore="key.store" storepass="kukaracha" keypass="kukaracha" />
+	   	<signjar jar="lib/commons-io-2.0.1.jar" alias="jarkey" keystore="key.store" storepass="kukaracha" keypass="kukaracha" signedJar="commons-io-2.0.1.jar"/>
+	   	<signjar jar="lib/guava-13.0.1.jar" alias="jarkey" keystore="key.store" storepass="kukaracha" keypass="kukaracha" signedJar="guava-13.0.1.jar"/>
+	   	<signjar jar="lib/log5j-2.1.2.jar" alias="jarkey" keystore="key.store" storepass="kukaracha" keypass="kukaracha" signedJar="log5j-2.1.2.jar"/>
+	   	<signjar jar="lib/trove-3.0.0rc1.jar" alias="jarkey" keystore="key.store" storepass="kukaracha" keypass="kukaracha" signedJar="trove-3.0.0rc1.jar" />
+	   	<signjar jar="lib/gson-1.7.1.jar" alias="jarkey" keystore="key.store" storepass="kukaracha" keypass="kukaracha" signedJar="gson-1.7.1.jar" /!-->
+	</target>
+	<target name="cleanup">
+  		<delete dir="${classes.dir}" />
+	</target>
+			
+</project>
