@@ -1,0 +1,51 @@
+################################
+# draft character descriptor 
+################################
+
+
+{
+	# unique character id
+	"id"   : 1,
+	
+	# character display name
+	"name" : "Zaratustra",
+	
+	# character physical properties
+	"body" : {
+	
+		"max_speed"    : 1.00,
+		
+		"acceleration" : 0.10, 
+		
+		"weight"       : 5.00,
+		
+		"size"         : 10.00,
+
+		"luck"         : 0.75
+	},
+		
+	# actions available to the character
+	"actions" : {
+	
+		"jump"       : { "amount" : 2, "value" : 1 }
+		
+		"accelerate" : { "amount" : 1, "value" : 2 }
+		
+	},
+		
+	# characher's graphic skin
+	"skin" : {
+	
+		# set of graphics for this character:
+		"bundle_id" : "assets/skins/characters/fat_rat",
+		
+		# additional overlays on the basic model 
+		"features"  : {
+		
+			"left_leg" : "assets/skins/features/wood_leg",
+			
+			"head_hair"     : "assets/skins/features/irokese"
+			
+		}
+	}
+}
