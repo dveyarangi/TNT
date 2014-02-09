@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.unnamed.tnt;
+package org.tnt;
 
 import java.util.HashSet;
 import java.util.Set;

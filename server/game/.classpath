@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="lib/netty-all-4.0.15.Final.jar" sourcepath="src/netty-all-4.0.15.Final-sources.jar"/>
+	<classpathentry kind="lib" path="lib/prod/netty-all-4.0.15.Final.jar" sourcepath="lib/dev/netty-all-4.0.15.Final-sources.jar"/>
+	<classpathentry kind="lib" path="lib/prod/json-io.jar"/>
+	<classpathentry kind="lib" path="lib/prod/util-1.0.b22.jar"/>
+	<classpathentry kind="lib" path="lib/prod/log5j-2.1.2.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

@@ -10,7 +10,7 @@
 
 	
 	<property name="src.dir"       location="src"/>
-	<property name="lib.dir"       location="lib"/>
+	<property name="lib.dir"       location="lib/prod"/>
 	<property name="etc.dir"       location="etc"/>
 	<property name="build.dir"     location="build"/>
 	<property name="classes.dir"   location="${build.dir}/classes"/>
