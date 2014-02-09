@@ -1,8 +1,6 @@
 ################################
 # draft character descriptor 
 ################################
-
-
 {
 	# unique character id
 	"id"   : 1,
@@ -27,7 +25,7 @@
 	# actions available to the character
 	"actions" : {
 	
-		"jump"       : { "amount" : 2, "value" : 1 }
+		"jump"       : { "amount" : 2, "value" : 1 },
 		
 		"accelerate" : { "amount" : 1, "value" : 2 }
 		
@@ -37,7 +35,7 @@
 	"skin" : {
 	
 		# set of graphics for this character:
-		"bundle_id" : "assets/skins/characters/fat_rat",
+		"skin_id" : "assets/skins/characters/fat_rat",
 		
 		# additional overlays on the basic model 
 		"features"  : {
