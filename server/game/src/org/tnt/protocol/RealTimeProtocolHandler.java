@@ -1,4 +1,4 @@
-package org.tnt;
+package org.tnt.protocol;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -14,11 +14,13 @@ public class RealTimeProtocolHandler extends ChannelInboundHandlerAdapter
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) 
     {
-        try {
-            // Do something with msg
+    	try {
+    		ctx.write(msg); 
+    	    ctx.flush(); 
         } finally {
             ReferenceCountUtil.release(msg);
-        }	        // Discard the received data silently.
+        }	        
+    	
     }
 
     @Override
