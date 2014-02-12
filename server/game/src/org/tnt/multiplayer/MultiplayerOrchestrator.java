@@ -84,35 +84,32 @@ public class MultiplayerOrchestrator
 		
 		if(game.getSimulator().isFull())
 		{
+			synchronized(initingGames)
+			{
+				initingGames.remove( game.getSimulator().getType(), game );
+			}
 			
+			synchronized(runningGames)
+			{
+				for(Character gameCharacter : game.getCharacters())
+				{
+					runningGames.put( gameCharacter.getPlayer(), game );
+				}
+			}
+			
+			game.ready();
 		}
 	}
 
 	public PlayersRegistry getPlayerRegistery() { return registery; }
 	
-	private void sendGameReady(MultiplayerGame game)
-	{
-		for(Character gameCharacter : game.getCharacters())
-		{
-			game.addUpdates( updates )
-			registery.getChannel( gameCharacter. )
-		}		
-	}
+
 	
 	void gameReady( MultiplayerGame game )
 	{
-		synchronized(initingGames)
+		for(Character gameCharacter : game.getCharacters())
 		{
-			initingGames.remove( game.getSimulator().getType(), game );
-		}
-		
-		synchronized(runningGames)
-		{
-			for(Character gameCharacter : game.getCharacters())
-			{
-				runningGames.put( gameCharacter.getPlayer(), game );
-				registery.getPlayerHandler( gameCharacter.getPlayer() ).switchToRealTime(game, gameCharacter);
-			}
+			registery.getPlayerHandler( gameCharacter.getPlayer() ).switchToRealTime(game, gameCharacter);
 		}
 		
 		game.start( threadPool );
@@ -130,6 +127,11 @@ public class MultiplayerOrchestrator
 			}
 		}
 		
+	}
+
+	public MultiplayerGame getGame( Player player )
+	{
+		return runningGames.get( player );
 	}
 
 

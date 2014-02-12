@@ -9,7 +9,7 @@ public class MGo extends IClientMessage
 	@Override
 	void process( Player player, MultiplayerOrchestrator orchestrator )
 	{
-		orchestrator.getGame( player ).gameAcknowledged();
+		orchestrator.getGame( player ).gameAcknowledged( player );
 	}
 
 }

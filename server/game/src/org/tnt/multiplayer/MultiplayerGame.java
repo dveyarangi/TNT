@@ -6,7 +6,6 @@ package org.tnt.multiplayer;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -16,6 +15,7 @@ import java.util.concurrent.Future;
 import org.tnt.IGameSimulator;
 import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
+import org.tnt.account.Player;
 
 
 /**
@@ -39,8 +39,8 @@ public class MultiplayerGame
 	private int nextCharId = 1;
 	
 	private Map <Character, Integer> characters = new HashMap <Character, Integer> ();
-	
-	public MultiplayerGame(MultiplayerOrchestrator orchestrator, IGameSimulator simulation)
+
+	MultiplayerGame(MultiplayerOrchestrator orchestrator, IGameSimulator simulation)
 	{
 		this.orchestrator = orchestrator;
 		
@@ -50,7 +50,7 @@ public class MultiplayerGame
 		this.updates = new IdentityHashMap <Character, Queue<IGameUpdate>> (); 
 	}
 	
-	public void addCharacter(Character character)
+	void addCharacter(Character character)
 	{
 		if(characters.containsKey( character ))
 			throw new IllegalArgumentException("Character " + character + " is already in game " + this);
@@ -60,11 +60,25 @@ public class MultiplayerGame
 		updates.put( character, new LinkedList <IGameUpdate> () );
 		
 		simulatorThread.getSimulator().addCharacter( character );
-		
 
 	}
 	
-	public void start(ExecutorService threadPool)
+	void ready()
+	{
+		for(Character character : getCharacters())
+		{
+			Channel channel = orchestrator.getPlayerRegistery().getChannel( character.getPlayer() );
+		}
+		
+	}
+
+	public void gameAcknowledged( Player player )
+	{
+		GameProtocolHandler handler = 
+				orchestrator.getPlayerRegistery().getPlayerHandler( );
+		
+	}	
+	void start(ExecutorService threadPool)
 	{
 		
 		Future simulatorfuture = threadPool.submit( simulatorThread );
@@ -113,5 +127,6 @@ public class MultiplayerGame
 	{
 		orchestrator.gameOver( this );
 	}
+
 
 }
