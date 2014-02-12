@@ -1,6 +1,6 @@
-package org.tnt.protocol.realtime;
+package org.tnt.multiplayer.realtime;
 
-import org.tnt.game.CharacterAction;
+import org.tnt.game.rats.CharacterAction;
 
 /**
  * This is non-encoded message from server during the game session.
@@ -31,6 +31,5 @@ public class ServerPacket
 	 * character current action; if not null it represent the beginning of the action
 	 */
 	CharacterAction action;
-	
 
 }

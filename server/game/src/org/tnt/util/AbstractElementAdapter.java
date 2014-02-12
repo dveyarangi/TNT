@@ -8,10 +8,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
  
-public class AbstractElementAdapter implements JsonDeserializer<Object> {
+public class AbstractElementAdapter <E>implements JsonDeserializer<E> {
 	
     @Override
-    public Object deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException 
+    public E deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException 
     {
         JsonObject jsonObject = json.getAsJsonObject();
         JsonElement jsonElement = jsonObject.get("@type");

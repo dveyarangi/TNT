@@ -9,18 +9,28 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
-import org.tnt.protocol.RealTimeProtocolHandler;
+import org.tnt.multiplayer.GameProtocolHandler;
+import org.tnt.multiplayer.MultiplayerOrchestrator;
 
 public class TNTServer 
 {
 
 	private ServerConfig	config;
+	
+	private PlayerStore store;
+	
+	private MultiplayerOrchestrator orchestrator;
 
 	public TNTServer( ServerConfig config )
 	{
 		this.config = config;
+		
+		this.store = new PlayerStore();
+		
+		this.orchestrator = new MultiplayerOrchestrator(store);
 	}
 
 	public void run() throws Exception
@@ -35,7 +45,7 @@ public class TNTServer
 						@Override
 						public void initChannel( SocketChannel ch ) throws Exception
 						{
-							ch.pipeline().addLast( new RealTimeProtocolHandler() );
+							ch.pipeline().addLast( new GameProtocolHandler( orchestrator ) );
 						}
 					} )
 					.option( ChannelOption.SO_BACKLOG, 128 )
