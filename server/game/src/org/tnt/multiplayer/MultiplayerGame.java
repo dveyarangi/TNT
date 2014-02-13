@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import org.tnt.IGameSimulator;
 import org.tnt.IGameUpdate;
@@ -33,7 +32,7 @@ public class MultiplayerGame
 	 */
 	private Map <Character, Queue <IGameUpdate>> updates;
 	
-	private DispatcherThread dispatcherThread;
+	private IngameDispatcherThread dispatcherThread;
 	private SimulatorThread simulatorThread;
 	
 	private int nextCharId = 1;
@@ -45,7 +44,7 @@ public class MultiplayerGame
 		this.orchestrator = orchestrator;
 		
 		this.simulatorThread  = new SimulatorThread( this, simulation );
-		this.dispatcherThread = new DispatcherThread( this );
+		this.dispatcherThread = new IngameDispatcherThread( this );
 		
 		this.updates = new IdentityHashMap <Character, Queue<IGameUpdate>> (); 
 	}
@@ -53,7 +52,9 @@ public class MultiplayerGame
 	void addCharacter(Character character)
 	{
 		if(characters.containsKey( character ))
+		{
 			throw new IllegalArgumentException("Character " + character + " is already in game " + this);
+		}
 		
 		characters.put( character, nextCharId ++ );
 		
@@ -81,8 +82,8 @@ public class MultiplayerGame
 	void start(ExecutorService threadPool)
 	{
 		
-		Future simulatorfuture = threadPool.submit( simulatorThread );
-		Future dispatchFutire  = threadPool.submit( dispatcherThread );
+		threadPool.submit( simulatorThread );
+		threadPool.submit( dispatcherThread );
 	}
 	
 	public Queue<IGameUpdate> getUpdates(Character character)
@@ -91,7 +92,9 @@ public class MultiplayerGame
 		{
 			Queue <IGameUpdate> charUpdates  = this.updates.get( character );
 			if(!this.updates.isEmpty())
+			{
 				this.updates.put( character, new LinkedList <IGameUpdate> () );
+			}
 			
 			
 			return charUpdates;

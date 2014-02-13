@@ -9,7 +9,7 @@ import org.tnt.account.Character;
 
 import com.spinn3r.log5j.Logger;
 
-public class DispatcherThread implements Runnable
+public class IngameDispatcherThread implements Runnable
 {
 	
 	////////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ public class DispatcherThread implements Runnable
 	// thread service stuff
 	
 	
-	private static Logger log = Logger.getLogger( DispatcherThread.class );
+	private static Logger log = Logger.getLogger( IngameDispatcherThread.class );
 	
 	private volatile boolean isAlive = false;
 	
@@ -30,7 +30,7 @@ public class DispatcherThread implements Runnable
 	////////////////////////////////////////////////////////////
 	
 	
-	public DispatcherThread(MultiplayerGame multiplayer)
+	public IngameDispatcherThread(MultiplayerGame multiplayer)
 	{
 		this.multiplayer = multiplayer;
 	}

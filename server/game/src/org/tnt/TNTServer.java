@@ -12,7 +12,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
-import org.tnt.multiplayer.GameProtocolHandler;
+import org.tnt.multiplayer.AuthHandler;
 import org.tnt.multiplayer.MultiplayerOrchestrator;
 
 public class TNTServer 
@@ -23,14 +23,28 @@ public class TNTServer
 	private PlayerStore store;
 	
 	private MultiplayerOrchestrator orchestrator;
+	
+	private ChannelInitializer <SocketChannel> channelInitializer; 
 
 	public TNTServer( ServerConfig config )
 	{
+		// server configuration
 		this.config = config;
 		
+		// storage of player account, profile and characters
 		this.store = new PlayerStore();
 		
+		// multiplayer hub:
 		this.orchestrator = new MultiplayerOrchestrator(store);
+		
+		// authentication handler appendix:
+		this.channelInitializer = new ChannelInitializer<SocketChannel>() {
+			private AuthHandler handler = new AuthHandler( store, orchestrator );
+			@Override public void initChannel( SocketChannel ch ) throws Exception
+			{
+				ch.pipeline().addLast( handler );
+			}
+		};
 	}
 
 	public void run() throws Exception
@@ -40,16 +54,10 @@ public class TNTServer
 		try
 		{
 			ServerBootstrap b = new ServerBootstrap();
-			b.group( bossGroup, workerGroup ).channel( NioServerSocketChannel.class )
-					.childHandler( new ChannelInitializer<SocketChannel>() {
-						@Override
-						public void initChannel( SocketChannel ch ) throws Exception
-						{
-							ch.pipeline().addLast( new GameProtocolHandler( orchestrator ) );
-						}
-					} )
-					.option( ChannelOption.SO_BACKLOG, 128 )
-					.childOption( ChannelOption.SO_KEEPALIVE, true );
+			b.group( bossGroup, workerGroup ).channel( NioServerSocketChannel.class );
+			b.childHandler( channelInitializer );
+			b.option( ChannelOption.SO_BACKLOG, 128 );
+			b.childOption( ChannelOption.SO_KEEPALIVE, true );
 
 			// Bind and start to accept incoming connections.
 			ChannelFuture f = b.bind( config.getPort() ).sync();

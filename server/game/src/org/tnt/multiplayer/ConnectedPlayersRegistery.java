@@ -8,7 +8,7 @@ import org.tnt.account.PlayerStore;
 
 import io.netty.channel.Channel;
 
-public class PlayersRegistry
+public class ConnectedPlayersRegistery
 {
 	private PlayerStore store;
 	
@@ -16,7 +16,7 @@ public class PlayersRegistry
 	private Map <Player, Channel> channelByPlayer = new HashMap <Player, Channel> ();
 	private Map <Channel, GameProtocolHandler> gameHandlers = new HashMap <Channel, GameProtocolHandler> ();
 	
-	public PlayersRegistry(PlayerStore store)
+	public ConnectedPlayersRegistery(PlayerStore store)
 	{
 		this.store = store;
 	}

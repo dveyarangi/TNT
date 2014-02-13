@@ -4,9 +4,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
+import org.tnt.account.Character;
+import org.tnt.account.Player;
 import org.tnt.multiplayer.admin.AdminProtocolHandler;
 import org.tnt.multiplayer.realtime.GameProtocolCodec;
-import org.tnt.account.Character;
+
+import com.spinn3r.log5j.Logger;
 /**
  * This class manages the in-game communications with game client.
  * 
@@ -14,6 +17,7 @@ import org.tnt.account.Character;
  */
 public class GameProtocolHandler extends ChannelInboundHandlerAdapter 
 {
+	private static Logger log = Logger.getLogger(GameProtocolHandler.class);
 	
 	private AdminProtocolHandler adminHandler;
 	private GameProtocolCodec gameHandler;
@@ -22,9 +26,13 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 	
 	private MultiplayerOrchestrator orchestrator;
 	
-	public GameProtocolHandler (MultiplayerOrchestrator orchestrator)
+	private Player player;
+	
+	public GameProtocolHandler (MultiplayerOrchestrator orchestrator, Player player)
 	{
 		this.orchestrator = orchestrator;
+		
+		this.player = player;
 		
 		activeHandler = adminHandler = new AdminProtocolHandler( orchestrator );
 		gameHandler = new GameProtocolCodec(  );
@@ -46,6 +54,7 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 	@Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception
     {
+		log.debug( "Channel active " + ctx.channel().toString() );
 		orchestrator.getPlayerRegistery().registerChannel( ctx.channel(), this );
     }
 
@@ -56,6 +65,7 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 		gameHandler.channelInactive( ctx );
 		
 		orchestrator.getPlayerRegistery().unregisterChannel( ctx.channel() );
+		log.debug( "Channel inactive " + ctx.channel().toString() );
 	}
 	
 	
@@ -74,6 +84,5 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
     {
     	activeHandler.exceptionCaught( ctx, cause ); 
     }	
-    
     
 }

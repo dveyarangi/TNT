@@ -29,7 +29,7 @@ import com.google.common.collect.Multimap;
 public class MultiplayerOrchestrator
 {
 	
-	private PlayersRegistry registery;
+	private ConnectedPlayersRegistery registery;
 	
 	public Map <Character, GameType> queue = new IdentityHashMap<Character, GameType>();
 	
@@ -44,9 +44,16 @@ public class MultiplayerOrchestrator
 	
 	public MultiplayerOrchestrator(PlayerStore store)
 	{
-		registery = new PlayersRegistry( store );
+		registery = new ConnectedPlayersRegistery( store );
 	}
 	
+	/**
+	 * Registers a game request.
+	 * Note: This method runs in the client network IO thread! 
+	 * @param player
+	 * @param characterId
+	 * @param gameRequest
+	 */
 	public void addGameRequest(Player player, int characterId, MCGameRequest gameRequest)
 	{
 		
@@ -101,7 +108,7 @@ public class MultiplayerOrchestrator
 		}
 	}
 
-	public PlayersRegistry getPlayerRegistery() { return registery; }
+	public ConnectedPlayersRegistery getPlayerRegistery() { return registery; }
 	
 
 	
