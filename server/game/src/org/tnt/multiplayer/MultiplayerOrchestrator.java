@@ -26,7 +26,7 @@ import com.spinn3r.log5j.Logger;
  * Matches players to games
  * TODO: clean finished games
  * TODO: better matchfinding logic
- * 
+ * TODO: abstractize gamehandlerprotocol to allow bots
  * 
  * @author Fima
  *

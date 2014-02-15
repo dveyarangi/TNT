@@ -87,7 +87,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     	catch(Exception e)
     	{
        		log.warn( "Auth failed", e);
-			ctx.writeAndFlush( gson.toJson( new MSAuthFailed(e.getMessage()) ) );
+			ctx.writeAndFlush( gson.toJson( MSAuthResult.FAILED_SERVER_ERROR ) );
 			return;
     	}
        	finally 
@@ -98,12 +98,12 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     	if(credentials == null)
 		{
     		log.warn( "Auth failed.");
-			ctx.writeAndFlush( gson.toJson( new MSAuthFailed("Player not registered") ) );
+			ctx.writeAndFlush( gson.toJson( MSAuthResult.FAILED_UNKNOWN_PLAYER ) );
 			return;
 		}
     	
 		log.debug( "Player %s was succesfully authenticated", credentials );
-		ctx.writeAndFlush( gson.toJson( new MSAuthOk() ) );
+		ctx.writeAndFlush( gson.toJson( MSAuthResult.OK ) );
 
     	/////////////////////////////////////////////
     	// adding game handler with credentials info:

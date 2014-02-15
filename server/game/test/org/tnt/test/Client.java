@@ -33,7 +33,7 @@ public class Client
 				public void initChannel( SocketChannel ch ) throws Exception
 				{
 					ch.pipeline().addLast( new StringEncoder());
-					ch.pipeline().addLast( new ClientHandler() );
+//					ch.pipeline().addLast( new ClientHandler() );
 				}
 			} );
 	
