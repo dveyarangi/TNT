@@ -28,6 +28,8 @@ public class SimulatorThread implements Runnable
 	
 	private boolean isAlive;
 	
+	private boolean isPaused = true;
+	
 	private static final long HEARTBEAT = 30; // ms
 
 	////////////////////////////////////////////////////////////
@@ -45,29 +47,45 @@ public class SimulatorThread implements Runnable
 		
 		List <IGameUpdate> updates;
 		
-		startTime = System.nanoTime();
+		long updateTime = startTime = System.nanoTime();
+		long now;
+		
 		while(isAlive && !simulator.isOver())
 		{
-			// getting ingame time
-			time = System.nanoTime() - startTime;
+			now = System.nanoTime();
 			
-			// advancing game and getting updates
-			updates = simulator.step( time );
+			if(!isPaused)
+			{
+				
+				time += (now - updateTime);
+
+				// advancing game and getting updates
+				updates = simulator.step( time );
+				
+				// dispatching updates
+				// TODO: should be a separate controllable frequency
+				for(IGameUpdate update : updates)
+					multiplayer.addUpdate( update );
+			}
 			
-			// dispatching updates
-			// TODO: should be a separate controllable frequency
-			for(IGameUpdate update : updates)
-				multiplayer.addUpdate( update );
-					
+			updateTime = now; 
+			
 			try
 			{
 				Thread.sleep( HEARTBEAT );
 			} 
-			catch( InterruptedException e ) { isAlive = false; }
+			catch( InterruptedException e ) { 
+				isAlive = false; 
+				log.error( "Simulator thread interrupted.", e );
+			}
 		}
 		
 		multiplayer.gameOver();
 	}
+	
+	public void togglePause() { this.isPaused = !this.isPaused; }
+	
+	public boolean isPaused() { return isPaused; }
 
 	public void safeStop() { this.isAlive = false; }
 	

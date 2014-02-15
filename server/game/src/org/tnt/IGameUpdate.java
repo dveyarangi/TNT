@@ -1,8 +1,8 @@
 package org.tnt;
 
-import org.tnt.account.Character;
+import org.tnt.multiplayer.realtime.IServerPacket;
 
-public interface IGameUpdate
+public interface IGameUpdate extends IServerPacket
 {
-	public Character getCharacter();
+	public int getPID();
 }

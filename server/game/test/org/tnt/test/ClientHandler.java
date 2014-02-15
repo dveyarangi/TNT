@@ -1,13 +1,18 @@
 package org.tnt.test;
 
+import com.spinn3r.log5j.Logger;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class TestClientHandler extends ChannelInboundHandlerAdapter
+public class ClientHandler extends ChannelInboundHandlerAdapter
 {
+	
+	private Logger log = Logger.getLogger(this.getClass());
+	
 	@Override
     public void channelActive(final ChannelHandlerContext ctx) { // (1)
         final ByteBuf time = ctx.alloc().buffer(4); // (2)
@@ -28,4 +33,12 @@ public class TestClientHandler extends ChannelInboundHandlerAdapter
         cause.printStackTrace();
         ctx.close();
     }
+    
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        ctx.fireChannelInactive();
+        ctx.close();
+        log.info( "Disconnected from server" );
+    }
+
 }

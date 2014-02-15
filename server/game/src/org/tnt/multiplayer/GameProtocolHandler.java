@@ -1,17 +1,21 @@
 package org.tnt.multiplayer;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelPipeline;
+
+import io.netty.handler.codec.Delimiters;
 import io.netty.util.ReferenceCountUtil;
 
 import org.tnt.account.Character;
 import org.tnt.account.Player;
 import org.tnt.multiplayer.admin.AdminProtocolHandler;
-import org.tnt.multiplayer.realtime.GameProtocolCodec;
+import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 
 import com.spinn3r.log5j.Logger;
 /**
- * This class manages the in-game communications with game client.
+ * This class creates and swaps between admin and ingame protocol handlers
  * 
  * @author Fima
  */
@@ -19,8 +23,8 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 {
 	private static Logger log = Logger.getLogger(GameProtocolHandler.class);
 	
-	private AdminProtocolHandler adminHandler;
-	private GameProtocolCodec gameHandler;
+	private ChannelPipeline pipeline;
+	private Channel channel;
 	
 	private volatile ChannelInboundHandlerAdapter activeHandler;
 	
@@ -28,43 +32,59 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 	
 	private Player player;
 	
-	public GameProtocolHandler (MultiplayerOrchestrator orchestrator, Player player)
+	private AdminProtocolHandler adminHandler;
+	
+	public GameProtocolHandler ( Channel channel, ChannelPipeline pipeline, Player player, MultiplayerOrchestrator orchestrator)
 	{
+		this.pipeline = pipeline;
+		this.channel = channel;
+		
 		this.orchestrator = orchestrator;
 		
 		this.player = player;
 		
-		activeHandler = adminHandler = new AdminProtocolHandler( orchestrator );
-		gameHandler = new GameProtocolCodec(  );
-		
 	}
 	
-	public void switchToRealTime(MultiplayerGame multiplayer, Character character) 
+	IngameProtocolHandler switchToRealTime(MultiplayerGame multiplayer, Character character) 
 	{ 
-		gameHandler.activate( multiplayer, character );
-		this.activeHandler = gameHandler; 
+		pipeline.remove( "frame" );
+		pipeline.remove( "admin" );
+		
+		pipeline.addLast( "frame", IngameProtocolHandler.FRAME_DECODER );
+		
+		IngameProtocolHandler handler = new IngameProtocolHandler( channel, multiplayer, character );
+		pipeline.addLast( "ingame", handler );
+		
+		adminHandler = null;
+
+		return handler;
 	}
 	
-	public void switchToAdmin()    
+	AdminProtocolHandler switchToAdmin()    
 	{
+		pipeline.remove( "frame" );
+		pipeline.remove( "ingame" );
 		
-		this.activeHandler = adminHandler; 
+		pipeline.addLast( "frame", AdminProtocolHandler.FRAME_DECODER );
+		
+		adminHandler = new AdminProtocolHandler( channel, orchestrator );
+		pipeline.addLast( "admin", adminHandler );
+ 		
+		return adminHandler;
 	}
+	
+	AdminProtocolHandler getAdminHandler() { return adminHandler; }
 	
 	@Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception
     {
 		log.debug( "Channel active " + ctx.channel().toString() );
-		orchestrator.getPlayerRegistery().registerChannel( ctx.channel(), this );
     }
 
 	@Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
-		adminHandler.channelInactive( ctx );
-		gameHandler.channelInactive( ctx );
-		
-		orchestrator.getPlayerRegistery().unregisterChannel( ctx.channel() );
+    	orchestrator.unregisterPlayerHandler( this.getPlayer() );
 		log.debug( "Channel inactive " + ctx.channel().toString() );
 	}
 	
@@ -83,6 +103,8 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
     {
     	activeHandler.exceptionCaught( ctx, cause ); 
-    }	
+    }
+
+	public Player getPlayer() { return player; }
     
 }

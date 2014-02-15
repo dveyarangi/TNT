@@ -1,8 +1,10 @@
 package org.tnt.game.rats;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.tnt.GameType;
@@ -15,22 +17,17 @@ public class RatsSimulation implements IGameSimulator
 	
 	private static final int CHARS_IN_RACE = 2;
 	
-	private Set <Character> characters = new HashSet <Character> ();
+	private Map<Character, Integer> characters = new HashMap<Character, Integer> ();
 	
 	private boolean isOver = true;
 	
 
 	@Override
-	public void addCharacter( Character character )
+	public void setCharacters( Map<Character, Integer> character )
 	{
-		characters.add( character );
+		this.characters.putAll( characters );
 	}
 
-	@Override
-	public boolean isFull()
-	{
-		return characters.size() == CHARS_IN_RACE;
-	}
 
 	@Override
 	public void init()
@@ -48,6 +45,9 @@ public class RatsSimulation implements IGameSimulator
 		return updates;
 	}
 
+	@Override
+	public int getMaxCapacity() { return CHARS_IN_RACE; }
+	
 	@Override
 	public boolean isOver() { return isOver; }
 

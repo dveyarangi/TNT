@@ -1,11 +1,11 @@
 package org.tnt.multiplayer;
 
-import io.netty.channel.Channel;
-
+import java.util.Map;
 import java.util.Queue;
 
 import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
+import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 
 import com.spinn3r.log5j.Logger;
 
@@ -14,8 +14,6 @@ public class IngameDispatcherThread implements Runnable
 	
 	////////////////////////////////////////////////////////////
 	//
-	
-	private MultiplayerGame multiplayer;
 	
 	////////////////////////////////////////////////////////////
 	// thread service stuff
@@ -27,12 +25,17 @@ public class IngameDispatcherThread implements Runnable
 	
 	private static final long HEARTBEAT = 50; // ms
 	
+	private Map <Character, IngameProtocolHandler> handlers;
+	
+	private MultiplayerGame multiplayer;
+	
 	////////////////////////////////////////////////////////////
 	
 	
-	public IngameDispatcherThread(MultiplayerGame multiplayer)
+	public IngameDispatcherThread(MultiplayerGame multiplayer, Map <Character, IngameProtocolHandler> handlers)
 	{
 		this.multiplayer = multiplayer;
+		this.handlers = handlers;
 	}
 
 	@Override
@@ -41,21 +44,17 @@ public class IngameDispatcherThread implements Runnable
 		isAlive = true;
 		
 		Queue <IGameUpdate> updates;
-		Channel channel;
-		
 		while(isAlive)
 		{
-			for(Character character : multiplayer.getCharacters())
+			for(Character character : multiplayer.getCharacters().keySet())
 			{
-				updates = multiplayer.getUpdates( character );
-				
-				channel = multiplayer.getOrchestrator().getPlayerRegistery()
-						.getChannel( character.getPlayer() );
+				updates = multiplayer.getUpdates( multiplayer.getCharacters().get( character ) );
 				
 				
 				for(IGameUpdate update : updates)
 				{
-					channel.write( update ); 
+					IngameProtocolHandler handler = handlers.get( character.getPlayer() );
+					handler.write( update ); 
 				}
 			}
 			

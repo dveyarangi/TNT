@@ -1,20 +1,23 @@
 package org.tnt.multiplayer.realtime;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
 
-import java.util.List;
-
+import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
 import org.tnt.multiplayer.MultiplayerGame;
 
-public class GameProtocolCodec extends ChannelInboundHandlerAdapter 
+public class IngameProtocolHandler extends ChannelInboundHandlerAdapter 
 {
 	private static final int IN_PACKET_SIZE = 128;
 	private static final int OUT_PACKET_SIZE = 128;
+	public static final FixedLengthFrameDecoder FRAME_DECODER = new FixedLengthFrameDecoder( OUT_PACKET_SIZE );
+	
+	private ByteBuf outBuffer;
 	
 	private MultiplayerGame multiplayer;
 	private Character character;
@@ -23,15 +26,15 @@ public class GameProtocolCodec extends ChannelInboundHandlerAdapter
 	
 	private GameState state;
 	
-	public GameProtocolCodec()
-	{
-	}
+	private Channel channel;
 	
-	public void activate(MultiplayerGame multiplayer, Character character)
+	public IngameProtocolHandler(Channel channel, MultiplayerGame multiplayer, Character character)
 	{
-		this.state = GameState.INFORMING;
+		this.channel = channel;
 		this.multiplayer = multiplayer;
 		this.character = character;
+		
+		outBuffer = Unpooled.wrappedBuffer( new byte [ OUT_PACKET_SIZE ] );
 	}
 	
     @Override
@@ -47,30 +50,24 @@ public class GameProtocolCodec extends ChannelInboundHandlerAdapter
 //    	   	multiplayer.addPlayerAcknowledgement();
     	   	break;
     	}    	
-     }
-	private static class Encoder extends MessageToByteEncoder<ServerPacket>
-	{
+    }
 
-		@Override
-		protected void encode( ChannelHandlerContext ctx, ServerPacket msg, ByteBuf out )
-				throws Exception
-		{
-			out.writeByte( msg.playerId );
-			out.writeInt( msg.time );
-			out.writeFloat( msg.x );
-			out.writeFloat( msg.y );
-			out.writeByte( msg.action.ordinal() );
-		}
-	}
-	
-	private static class Decoder extends ByteToMessageDecoder
+
+
+	public void write( IGameUpdate update )
 	{
-		@Override
-		protected void decode( ChannelHandlerContext ctx, ByteBuf msg, List<Object> out )
-				throws Exception
-		{
-			// TODO Auto-generated method stub
-			
-		}
+		outBuffer.clear();
+		
+		update.write( outBuffer );
+		
+		channel.writeAndFlush( outBuffer );
+	}
+
+//	public MultiplayerGame getGame() { return multiplayer; }
+
+	public void stop()
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

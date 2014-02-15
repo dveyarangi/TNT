@@ -8,12 +8,14 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
 
 import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
-import org.tnt.multiplayer.AuthHandler;
 import org.tnt.multiplayer.MultiplayerOrchestrator;
+import org.tnt.multiplayer.auth.AuthHandler;
 
 public class TNTServer 
 {
@@ -25,6 +27,8 @@ public class TNTServer
 	private MultiplayerOrchestrator orchestrator;
 	
 	private ChannelInitializer <SocketChannel> channelInitializer; 
+	public static final DelimiterBasedFrameDecoder FRAME_DECODER = new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() );
+	
 
 	public TNTServer( ServerConfig config )
 	{
@@ -42,7 +46,8 @@ public class TNTServer
 			private AuthHandler handler = new AuthHandler( store, orchestrator );
 			@Override public void initChannel( SocketChannel ch ) throws Exception
 			{
-				ch.pipeline().addLast( handler );
+				ch.pipeline().addLast( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ));
+				ch.pipeline().addLast( AuthHandler.NAME, handler );
 			}
 		};
 	}

@@ -3,13 +3,13 @@ package org.tnt.test;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringEncoder;
 
 import java.net.InetAddress;
 
@@ -19,7 +19,7 @@ public class Client
 	
 	private ChannelFuture future;
 	
-	public Client(int port, final ChannelHandler handler)
+	public Client(int port)
 	{
 		workerGroup = new NioEventLoopGroup();
 		try
@@ -32,7 +32,8 @@ public class Client
 				@Override
 				public void initChannel( SocketChannel ch ) throws Exception
 				{
-					ch.pipeline().addLast( handler );
+					ch.pipeline().addLast( new StringEncoder());
+					ch.pipeline().addLast( new ClientHandler() );
 				}
 			} );
 	

@@ -1,8 +1,8 @@
 package org.tnt.test;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
+import org.tnt.multiplayer.auth.MCAuth;
+
+import com.google.gson.Gson;
 
 
 public class MockGameClient extends Thread
@@ -13,25 +13,22 @@ public class MockGameClient extends Thread
 		new MockGameClient().start();
 	}
 	
-	private TestClientHandler handler;
 	private Client client;
 	public MockGameClient()
 	{
-		handler = new TestClientHandler();
-		client = new Client(4242, handler);
-
-
+		client = new Client(4242);
 	}
 	
 	public void run()
 	{
-		ByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
-		ByteBuf buf = allocator.buffer(); 
-		buf.setBytes( 0, new byte [] { 1, 2 ,3 ,4 } );
+		Gson gson = new Gson();
+		
+		String authMessage = gson.toJson( new MCAuth(1) );
+//		ByteBuf buf = Unpooled.wrappedBuffer( authMessage.getBytes() ); 
+		client.getChannel().writeAndFlush( authMessage + "\r\n" );
 		while(true)
 		{
 			
-			client.getChannel().write( buf );
 			
 			try
 			{

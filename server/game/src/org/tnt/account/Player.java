@@ -19,4 +19,6 @@ public class Player
 	public List <Character> getCharacters() { return characters; }
 
 	public long getId() { return id; }
+	
+	public String toString() { return "player id: " + id; } 
 }

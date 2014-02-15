@@ -1,6 +1,5 @@
-package org.tnt.multiplayer.realtime;
+package org.tnt.game.rats;
 
-import org.tnt.game.rats.CharacterAction;
 
 /**
  * This is decoded message from client during the game session
