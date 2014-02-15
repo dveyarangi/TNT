@@ -28,6 +28,8 @@ public class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 	
 	private Channel channel;
 	
+	public static final String	NAME	= "ingame";
+	
 	public IngameProtocolHandler(Channel channel, MultiplayerGame multiplayer, Character character)
 	{
 		this.channel = channel;

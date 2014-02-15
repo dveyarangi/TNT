@@ -4,8 +4,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
-
-import io.netty.handler.codec.Delimiters;
 import io.netty.util.ReferenceCountUtil;
 
 import org.tnt.account.Character;
@@ -48,12 +46,12 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 	IngameProtocolHandler switchToRealTime(MultiplayerGame multiplayer, Character character) 
 	{ 
 		pipeline.remove( "frame" );
-		pipeline.remove( "admin" );
+		pipeline.remove( AdminProtocolHandler.NAME );
 		
 		pipeline.addLast( "frame", IngameProtocolHandler.FRAME_DECODER );
 		
 		IngameProtocolHandler handler = new IngameProtocolHandler( channel, multiplayer, character );
-		pipeline.addLast( "ingame", handler );
+		pipeline.addLast( IngameProtocolHandler.NAME, handler );
 		
 		adminHandler = null;
 
@@ -63,29 +61,22 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 	AdminProtocolHandler switchToAdmin()    
 	{
 		pipeline.remove( "frame" );
-		pipeline.remove( "ingame" );
+		pipeline.remove( IngameProtocolHandler.NAME );
 		
 		pipeline.addLast( "frame", AdminProtocolHandler.FRAME_DECODER );
 		
 		adminHandler = new AdminProtocolHandler( channel, orchestrator );
-		pipeline.addLast( "admin", adminHandler );
+		pipeline.addLast( AdminProtocolHandler.NAME, adminHandler );
  		
 		return adminHandler;
 	}
 	
 	AdminProtocolHandler getAdminHandler() { return adminHandler; }
-	
-	@Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception
-    {
-		log.debug( "Channel active " + ctx.channel().toString() );
-    }
 
 	@Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
     	orchestrator.unregisterPlayerHandler( this.getPlayer() );
-		log.debug( "Channel inactive " + ctx.channel().toString() );
 	}
 	
 	
@@ -103,6 +94,8 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
     {
     	activeHandler.exceptionCaught( ctx, cause ); 
+    	
+    	log.error( "Exception in game protocol", cause );
     }
 
 	public Player getPlayer() { return player; }

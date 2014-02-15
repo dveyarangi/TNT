@@ -3,6 +3,7 @@ package org.tnt.multiplayer.admin;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
@@ -33,6 +34,8 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 	private Gson gson;
 	
 	private static final Charset ENCODING = CharsetUtil.UTF_8;
+
+	public static final String	NAME	= "admin";
 	
 	private Player player;
 	

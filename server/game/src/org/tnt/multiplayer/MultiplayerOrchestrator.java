@@ -33,24 +33,47 @@ import com.spinn3r.log5j.Logger;
  */
 public class MultiplayerOrchestrator
 {
+	/**
+	 * A logger
+	 */
 	private Logger log = Logger.getLogger(this.getClass());
 //	private ConnectedPlayersRegistery registery;
 	
+	/**
+	 * List of players currently connected to players.
+	 * Each player has a corresponding channel handler, that manages current communication protocol with player's client
+	 */
 	private Map <Player, GameProtocolHandler> activePlayers = new HashMap <> ();
 	
+	/**
+	 * Queue of players looking for games
+	 * TODO: this should probably be managed by separate game balancer class
+	 */
 	private Map <Character, GameType> queue = new IdentityHashMap<>();
 	
+	/**
+	 * Currently open rooms that are waiting for players to join
+	 */
 	private Multimap <GameType, GameRoom> pendingRooms = HashMultimap.create();
 	
 	private Queue <GameRoom> readyRooms = new LinkedList <GameRoom> ();
 	
+	/**
+	 * Registry of games in progress
+	 */
 	private Map <Player, MultiplayerGame> runningGames = new IdentityHashMap<> ();
 	
 	
 	private SimulatorFactory gameFactory = new SimulatorFactory();
 	
+	/**
+	 * Player data storage
+	 */
 	private PlayerStore store;
 	
+	/**
+	 * executor pool for game threads
+	 */
 	private ExecutorService threadPool = Executors.newCachedThreadPool();
 	
 	public MultiplayerOrchestrator(PlayerStore store)
@@ -59,20 +82,32 @@ public class MultiplayerOrchestrator
 //		registery = new ConnectedPlayersRegistery( store );
 	}
 
+	/**
+	 * Registers player connection within the orchestrator.
+	 * Called after player had successfully authenticated.
+	 * @param handler
+	 */
 	public void registerPlayerHandler( GameProtocolHandler handler )
 	{
 		log.debug("Registered player handler for player " + handler.getPlayer());
 		activePlayers.put( handler.getPlayer(), handler );
 	}
 	
+	/**
+	 * Unregisters player connection within the orchestrator.
+	 * Called when player client disconnects from the server
+	 * @param handler
+	 */
 	public void unregisterPlayerHandler( Player player )
 	{
+		log.debug("Unregistered player handler for player " + player);
 		activePlayers.remove( player );
 	}
 
 	/**
 	 * Registers a game request.
 	 * Note: This method runs in the client network IO thread! 
+	 * TODO: separate game request, match finding and game launch processes
 	 * @param player
 	 * @param characterId
 	 * @param gameRequest
@@ -122,6 +157,8 @@ public class MultiplayerOrchestrator
 			
 		}
 	}
+	
+	
 	/**
 	 * Starts multiplayer game from the specified room
 	 * @param gameroom
