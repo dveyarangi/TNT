@@ -4,7 +4,6 @@
 package org.tnt.multiplayer.auth;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -43,11 +42,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 	
 	private Gson gson;
 	
-	
-	private ByteBuf MSG_AUTH_FAILED = Unpooled.wrappedBuffer( "fail".getBytes() );
-	private ByteBuf MSG_AUTH_SUCCED = Unpooled.wrappedBuffer( "ok".getBytes() );
-
-	
 	public AuthHandler(PlayerStore store, MultiplayerOrchestrator orchestrator)
 	{
 		this.store = store;
@@ -82,12 +76,18 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     		
     		// TODO: actual authentication!
     		credentials = store.getPlayer( message.getPlayerId() );
+        	if(credentials == null)
+    		{
+        		log.warn( "Auth failed: unknown player (id " + message.getPlayerId() + ")");
+        		writeAuthResult( ctx, MSAuthResult.FAILED_UNKNOWN_PLAYER );
+    			return;
+    		}
     		
     	}
     	catch(Exception e)
     	{
        		log.warn( "Auth failed", e);
-			ctx.writeAndFlush( gson.toJson( MSAuthResult.FAILED_SERVER_ERROR ) );
+       		writeAuthResult( ctx, MSAuthResult.FAILED_SERVER_ERROR );
 			return;
     	}
        	finally 
@@ -95,27 +95,26 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
        		ReferenceCountUtil.release(msg); 
        	}
     	
-    	if(credentials == null)
-		{
-    		log.warn( "Auth failed.");
-			ctx.writeAndFlush( gson.toJson( MSAuthResult.FAILED_UNKNOWN_PLAYER ) );
-			return;
-		}
     	
 		log.debug( "Player %s was succesfully authenticated", credentials );
-		ctx.writeAndFlush( gson.toJson( MSAuthResult.OK ) );
+		writeAuthResult( ctx,  MSAuthResult.OK );
 
     	/////////////////////////////////////////////
     	// adding game handler with credentials info:
       	
     	// auth handler is no longer needed:
-    	ctx.pipeline().remove( NAME );
+ //   	ctx.pipeline().remove( NAME );
     	
     	GameProtocolHandler handler = new GameProtocolHandler( ctx.channel(), ctx.pipeline(), credentials, orchestrator );
-    	ctx.pipeline().addLast( handler );
+  //  	ctx.pipeline().addLast( handler );
       	
     	orchestrator.registerPlayerHandler( handler );
 
+    }
+    
+    private void writeAuthResult(ChannelHandlerContext ctx, MSAuthResult result)
+    {
+		ctx.writeAndFlush( gson.toJson( result ) + "\r\n" );
     }
 
 }

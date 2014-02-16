@@ -9,6 +9,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 import java.net.InetAddress;
@@ -32,8 +35,10 @@ public class Client
 				@Override
 				public void initChannel( SocketChannel ch ) throws Exception
 				{
+					ch.pipeline().addLast( new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
+					ch.pipeline().addLast( new StringDecoder());
+					ch.pipeline().addLast( new ClientHandler() );
 					ch.pipeline().addLast( new StringEncoder());
-//					ch.pipeline().addLast( new ClientHandler() );
 				}
 			} );
 	

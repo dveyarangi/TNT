@@ -8,6 +8,8 @@ public enum MSAuthResult
 	@SerializedName("1") FAILED_UNKNOWN_PLAYER,
 	@SerializedName("2") FAILED_INVALID_CREDENTIALS,
 	@SerializedName("3") FAILED_SERVER_ERROR;
+
+	public boolean isOk() {	return this == OK; }
 	
 	
 }

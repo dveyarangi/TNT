@@ -19,6 +19,7 @@ public class MockGameClient extends Thread
 		client = new Client(4242);
 	}
 	
+	@Override
 	public void run()
 	{
 		Gson gson = new Gson();

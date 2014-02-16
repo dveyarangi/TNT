@@ -10,6 +10,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringEncoder;
 
 import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
@@ -48,6 +49,7 @@ public class TNTServer
 			{
 				ch.pipeline().addLast( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ));
 				ch.pipeline().addLast( AuthHandler.NAME, handler );
+				ch.pipeline().addLast( "encoder", new StringEncoder());
 			}
 		};
 	}
