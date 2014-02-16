@@ -9,7 +9,7 @@ public class MCQuit extends IClientMessage
 	@Override
 	void process( Player player, MultiplayerOrchestrator orchestrator )
 	{
-		throw new UnsupportedOperationException( );
+		orchestrator.removeFromGame( player );
 	}
 
 }

@@ -22,7 +22,7 @@ public class Client
 	
 	private ChannelFuture future;
 	
-	public Client(int port)
+	public Client(int port, final int playerId, final int charId)
 	{
 		workerGroup = new NioEventLoopGroup();
 		try
@@ -37,8 +37,9 @@ public class Client
 				{
 					ch.pipeline().addLast( new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
 					ch.pipeline().addLast( new StringDecoder());
-					ch.pipeline().addLast( new ClientHandler() );
 					ch.pipeline().addLast( new StringEncoder());
+					
+					ch.pipeline().addLast( new ClientHandler( playerId, charId) );
 				}
 			} );
 	

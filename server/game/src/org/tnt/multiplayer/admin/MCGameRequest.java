@@ -6,9 +6,20 @@ import org.tnt.multiplayer.MultiplayerOrchestrator;
 
 public class MCGameRequest extends IClientMessage
 {
+
 	private GameType gameType;
 	
 	private int characterId;
+
+	
+	
+	public MCGameRequest( GameType gameType, int characterId )
+	{
+		super();
+		this.gameType = gameType;
+		this.characterId = characterId;
+	}
+
 
 	public GameType getGameType()
 	{

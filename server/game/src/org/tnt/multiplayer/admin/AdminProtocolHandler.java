@@ -3,11 +3,8 @@ package org.tnt.multiplayer.admin;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 
@@ -26,30 +23,34 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 {
 	private final static Logger log = Logger.getLogger(AuthHandler.class);
 	
-	public static final DelimiterBasedFrameDecoder FRAME_DECODER = new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() );
-	
-	
 	private final MultiplayerOrchestrator orchestrator;
 	
-	private Gson gson;
+	private Gson inGson, outGson;
 	
 	private static final Charset ENCODING = CharsetUtil.UTF_8;
 
 	public static final String	NAME	= "admin";
 	
+	private static final String MESSAGE_PREFIX = "org.tnt.multiplayer.admin.MC";
+	
 	private Player player;
 	
 	private Channel channel;
 	
-	public AdminProtocolHandler(Channel channel, final MultiplayerOrchestrator orchestrator)
+	public AdminProtocolHandler(Channel channel, final MultiplayerOrchestrator orchestrator, Player player)
 	{
 		
 		this.orchestrator = orchestrator;
 		
 		this.channel = channel;
 		
-		this.gson = new GsonBuilder()
-			.registerTypeAdapter(IClientMessage.class, new AbstractElementAdapter<IClientMessage>())
+		this.player = player;
+		
+		this.inGson = new GsonBuilder()
+			.registerTypeAdapter(IClientMessage.class, new AbstractElementAdapter<IClientMessage>( MESSAGE_PREFIX ))
+			.create();
+		
+		this.outGson = new GsonBuilder()
 			.create();
 	}
 	@Override
@@ -73,7 +74,7 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
     		// TODO: stream through reader instead:
     		String jsonStr = buffer.toString( ENCODING );
         	log.debug( "Reading from client " + player + " >>> " + jsonStr );
-        	IClientMessage message = gson.fromJson( jsonStr, IClientMessage.class );
+        	IClientMessage message = inGson.fromJson( jsonStr, IClientMessage.class );
     		
 
     		if( message instanceof MCQuit )
@@ -99,13 +100,12 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
     
     public void write(IServerMessage message)
     {
-    	String jsonStr = gson.toJson( message );
+    	String jsonStr = outGson.toJson( message );
     	
     	log.debug( "Writing to client " + player + " >>> " + jsonStr );
-    	
-    	byte [] bytes = jsonStr.getBytes();
-    	
-    	ByteBuf buffer = Unpooled.wrappedBuffer( bytes );
-    	channel.write( buffer );
+    	channel.writeAndFlush( jsonStr + "\r\n");
+  
     }
+    
+
  }

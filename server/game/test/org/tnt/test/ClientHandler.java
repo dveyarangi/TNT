@@ -3,6 +3,10 @@ package org.tnt.test;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import org.tnt.GameType;
+import org.tnt.multiplayer.admin.MCGameRequest;
+import org.tnt.multiplayer.admin.MSGameDetails;
+import org.tnt.multiplayer.admin.MSGo;
 import org.tnt.multiplayer.auth.MSAuthResult;
 
 import com.google.gson.Gson;
@@ -16,6 +20,21 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
 	private Gson gson = new Gson();
 	
 	private boolean isAuthed = false;
+	private boolean isGameRequested = false;
+	private boolean isGameInited = false;
+	private boolean isGameAcknowledged = false;
+
+	private int	playerId;
+
+	private int	charId;
+	
+	private MSGameDetails gameDetails;
+	
+	public ClientHandler(int playerId, int charId)
+	{
+		this.playerId = playerId;
+		this.charId = charId;
+	}
 	
 	@Override
     public void channelActive(final ChannelHandlerContext ctx) {
@@ -31,12 +50,63 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
     	{
     		if(! doAuth( jsonStr, ctx ) )
 			{
+    			ctx.close();
 				return;
 			}
+     	}
+    	
+    	if(! isGameRequested)
+    	{
+    		doRequestGame( ctx );
+    		
+    		return;
     	}
+    	
+    	if(! isGameAcknowledged)
+    	{
+    		doInitGame( jsonStr, ctx );
+    		return;
+    	}
+
+    	
     }
     
-    /**
+    private void doAcknowledgeGame( String jsonStr, ChannelHandlerContext ctx )
+	{
+    	MSGo result = gson.fromJson( jsonStr, MSGo.class );
+ 		log.debug("Received game GO!: " + jsonStr);
+ 		 		
+		isGameAcknowledged = true;
+		
+	}
+
+	private void doInitGame( String jsonStr, ChannelHandlerContext ctx )
+	{
+		try {
+	    	gameDetails = gson.fromJson( jsonStr, MSGameDetails.class );
+	  		log.debug("Received game details: " + jsonStr);
+	   		
+			isGameInited = true;
+		}
+		catch(Exception e) // TODO: that is bad, but i am lazy
+		{
+			doAcknowledgeGame( jsonStr, ctx);
+		}
+		
+	}
+
+	private void doRequestGame( ChannelHandlerContext ctx )
+	{
+		MCGameRequest request = new MCGameRequest( GameType.RAT_RACE, charId );
+		
+		String jsonStr = gson.toJson( request );
+		log.debug( "Sending game request:" + jsonStr );
+		ctx.writeAndFlush( jsonStr + "\r\n" );
+   		
+ 		isGameRequested = true;
+	}
+
+	/**
 	 * @param ctx
 	 * @return
 	 */
@@ -50,7 +120,11 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
     		ctx.close();
     		return false;
     	}
-    	
+   		
+		isAuthed = true;
+   	
+   		log.debug("Successfully logged into server.");
+   	  		    	
     	return true;
 	}
 

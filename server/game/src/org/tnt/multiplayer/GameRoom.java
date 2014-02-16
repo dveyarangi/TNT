@@ -1,7 +1,7 @@
 package org.tnt.multiplayer;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.tnt.GameType;
 import org.tnt.account.Character;
@@ -13,7 +13,7 @@ public class GameRoom
 	
 	private int capacity;
 	
-	private Map <Player, Character> characters = new HashMap <Player, Character> ();
+	private List <Character> characters = new ArrayList <> ();
 
 
 	public GameRoom( GameType type, int capacity )
@@ -32,13 +32,21 @@ public class GameRoom
 
 	public void addCharacter( Character character )
 	{
-		characters.put( character.getPlayer(), character );
+		characters.add( character );
 	}
 	
 	public void removeCharacter( Player player )
 	{
-		characters.remove( player );
+		Character charToRemove = null;
+		for( Character character : characters)
+			if(character.getPlayer() == player)
+			{
+				charToRemove = character;
+				break;
+			}
+		
+		characters.remove( charToRemove );
 	}
 
-	public Map <Player, Character> getCharacters() { return characters; }
+	public List <Character> getCharacters() { return characters; }
 }

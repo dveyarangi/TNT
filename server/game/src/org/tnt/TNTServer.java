@@ -48,8 +48,9 @@ public class TNTServer
 			@Override public void initChannel( SocketChannel ch ) throws Exception
 			{
 				ch.pipeline().addLast( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ));
-				ch.pipeline().addLast( AuthHandler.NAME, handler );
 				ch.pipeline().addLast( "encoder", new StringEncoder());
+				
+				ch.pipeline().addLast( AuthHandler.NAME, handler );
 			}
 		};
 	}

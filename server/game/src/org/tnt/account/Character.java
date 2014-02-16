@@ -9,9 +9,11 @@ public class Character
 	
 	private Player player;
 	
-	public Character(Player player)
+	public Character(long id, Player player)
 	{
-		Preconditions.checkNotNull( player );
+		this.player = Preconditions.checkNotNull( player );
+		
+		this.id = id;
 	}
 	public Player getPlayer() { return player; }
 	public long getId() { return id; }

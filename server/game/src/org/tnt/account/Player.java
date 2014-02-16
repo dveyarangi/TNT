@@ -16,6 +16,13 @@ public class Player
 		this.characters = new ArrayList <Character> ();
 	}
 	
+	public Character getCharacter(int charId) 
+	{
+		if(characters.size() <= charId)
+			return null;
+		return characters.get( charId ); 
+	}
+	
 	public List <Character> getCharacters() { return characters; }
 
 	public long getId() { return id; }

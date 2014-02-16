@@ -16,6 +16,7 @@ import org.tnt.account.PlayerStore;
 import org.tnt.game.SimulatorFactory;
 import org.tnt.multiplayer.admin.MCGameRequest;
 import org.tnt.multiplayer.admin.MSGameDetails;
+import org.tnt.multiplayer.admin.MSGo;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 
 import com.google.common.collect.HashMultimap;
@@ -37,7 +38,6 @@ public class MultiplayerOrchestrator
 	 * A logger
 	 */
 	private Logger log = Logger.getLogger(this.getClass());
-//	private ConnectedPlayersRegistery registery;
 	
 	/**
 	 * List of players currently connected to players.
@@ -54,7 +54,8 @@ public class MultiplayerOrchestrator
 	/**
 	 * Currently open rooms that are waiting for players to join
 	 */
-	private Multimap <GameType, GameRoom> pendingRooms = HashMultimap.create();
+	private Multimap <GameType, GameRoom> pendingRoomsByType = HashMultimap.create();
+	private Map <Player, GameRoom> pendingRoomsByPlayer = new HashMap <> ();
 	
 	private Queue <GameRoom> readyRooms = new LinkedList <GameRoom> ();
 	
@@ -87,10 +88,14 @@ public class MultiplayerOrchestrator
 	 * Called after player had successfully authenticated.
 	 * @param handler
 	 */
-	public void registerPlayerHandler( GameProtocolHandler handler )
+	public boolean registerPlayerHandler( GameProtocolHandler handler )
 	{
+		if(activePlayers.containsKey( handler.getPlayer() ))
+			return false;
 		log.debug("Registered player handler for player " + handler.getPlayer());
 		activePlayers.put( handler.getPlayer(), handler );
+		
+		return true;
 	}
 	
 	/**
@@ -102,6 +107,8 @@ public class MultiplayerOrchestrator
 	{
 		log.debug("Unregistered player handler for player " + player);
 		activePlayers.remove( player );
+			
+		removeFromGame( player );
 	}
 
 	/**
@@ -115,7 +122,12 @@ public class MultiplayerOrchestrator
 	public void addGameRequest(Player player, int characterId, MCGameRequest gameRequest)
 	{
 		
-		Character character = player.getCharacters().get( characterId );
+		Character character = player.getCharacter( characterId );
+		if(character == null)
+		{
+			log.error( "No character with id %d for player %s", characterId, player );
+			return; // TODO: send error
+		}
 		
 		GameType type = gameRequest.getGameType();
 		
@@ -124,37 +136,50 @@ public class MultiplayerOrchestrator
 		
 		// looking for suitable game
 		// here should be
-		Collection <GameRoom> gameCandidates = pendingRooms.get( type );
-		GameRoom gameroom = null;
-		for(GameRoom aGame : gameCandidates)
+		synchronized(pendingRoomsByType)
 		{
-			if( !aGame.isFull() )
+			Collection <GameRoom> gameCandidates = pendingRoomsByType.get( type );
+			GameRoom gameroom = null;
+			for(GameRoom aGame : gameCandidates)
 			{
-				gameroom = aGame;
-				break;
+				if( !aGame.isFull() )
+				{
+					gameroom = aGame;
+					break;
+				}
 			}
-		}
-		
-		if(gameroom == null)
-		{			
-
-			gameroom = new GameRoom( type, 2 );
 			
-			pendingRooms.put( type, gameroom );
-		}
+			if(gameroom == null)
+			{			
 	
-		// adding character to the game:
-		gameroom.addCharacter( character );
-
-		if(gameroom.isFull())
-		{
-			synchronized(pendingRooms)
-			{
-				pendingRooms.remove( gameroom.getType(), gameroom );
+				gameroom = new GameRoom( type, 2 );
+				
+				pendingRoomsByType.put( type, gameroom );
+				pendingRoomsByPlayer.put( player, gameroom );
 			}
+		
+			// adding character to the game:
+			gameroom.addCharacter( character );
 			
-			initGame(gameroom);
-			
+			// sending game details message:
+			for(Character roomChar : gameroom.getCharacters())
+			{
+				MSGameDetails details = new MSGameDetails( gameroom.getCharacters() );
+				
+				GameProtocolHandler handler = activePlayers.get( roomChar.getPlayer() );
+				
+				handler.getAdminHandler().write( details );
+			}
+	
+			if(gameroom.isFull())
+			{
+				pendingRoomsByType.remove( gameroom.getType(), gameroom );
+				for(Character roomChar : gameroom.getCharacters())
+					pendingRoomsByPlayer.remove( roomChar.getPlayer() );
+				
+				initGame(gameroom);
+				
+			}
 		}
 	}
 	
@@ -178,10 +203,8 @@ public class MultiplayerOrchestrator
 				
 				GameProtocolHandler handler = activePlayers.get( player );
 				
-				// sending game details message:
-				MSGameDetails details = new MSGameDetails( player, game.getCharacters() );
-				handler.getAdminHandler().write( details );
 				
+				handler.getAdminHandler().write( MSGo.GO );
 				/////////////////////////////////////////////////////////////////////
 				// this was the last admin message, now real-time protocol starts
 				
@@ -211,9 +234,18 @@ public class MultiplayerOrchestrator
 		}
 	}
 
+	// TODO sync this with room start
 	public void removeFromGame( Player player )
 	{
-		throw new IllegalStateException("Method not yet implemented");
+		synchronized(pendingRoomsByType)
+		{			
+			GameRoom room = pendingRoomsByPlayer.get( player );
+			room.removeCharacter( player );
+
+			if(room.getCharacters().isEmpty())
+				pendingRoomsByType.remove( room.getType(), room );
+			
+		}	
 	}
 
 	

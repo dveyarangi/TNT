@@ -14,34 +14,37 @@ import org.tnt.account.Character;
 public class MSGameDetails implements IServerMessage
 {
 	private List <PlayerDetails> players;
-	
-	private Player targetPlayer;
+
 	
 	private static class PlayerDetails {
 		private long playerId;
 		private long characterId;
-		private long pid;
+		private int pid;
+		private GameData gameData;
+		
+		public static class GameData {
+			private int trackNumber;
+		}
 	}
 	
-	public MSGameDetails( Player targetPlayer, Map <Character, Integer> characterIds)
+	public MSGameDetails( List<Character> list)
 	{
 		this.players = new LinkedList <> ();
-		this.targetPlayer = targetPlayer;
 		
-		for( Character character : characterIds.keySet() )
+		int idx = 0;
+		for( Character character : list )
 		{
 			PlayerDetails playerDetails = new PlayerDetails();
 			playerDetails.playerId = character.getPlayer().getId();
 			playerDetails.characterId = character.getId();
-			playerDetails.pid = characterIds.get( character );
+			playerDetails.pid = idx;
+			playerDetails.gameData = new PlayerDetails.GameData();
+			playerDetails.gameData.trackNumber = playerDetails.pid;
 			players.add( playerDetails );
+			
+			idx ++;
 		}
 	}
 
-	@Override
-	public Player getTargetPlayer()
-	{
-		return targetPlayer;
-	}
 	
 }

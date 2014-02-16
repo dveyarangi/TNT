@@ -5,7 +5,8 @@ import org.tnt.multiplayer.MultiplayerOrchestrator;
 
 public abstract class IClientMessage
 {
-	private String type;
+	
+	private String type = this.getClass().getSimpleName().substring( 2 );
 	
 	public String getType() { return type; }
 	

@@ -4,5 +4,4 @@ import org.tnt.account.Player;
 
 public interface IServerMessage
 {
-	public Player getTargetPlayer();
 }

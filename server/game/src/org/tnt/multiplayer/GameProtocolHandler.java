@@ -2,8 +2,11 @@ package org.tnt.multiplayer;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
 import io.netty.util.ReferenceCountUtil;
 
 import org.tnt.account.Character;
@@ -21,10 +24,12 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 {
 	private static Logger log = Logger.getLogger(GameProtocolHandler.class);
 	
+	public static final String	FRAME	= "frame";
+	
 	private ChannelPipeline pipeline;
 	private Channel channel;
 	
-	private volatile ChannelInboundHandlerAdapter activeHandler;
+	private volatile ChannelInboundHandler activeHandler;
 	
 	private MultiplayerOrchestrator orchestrator;
 	
@@ -41,16 +46,20 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 		
 		this.player = player;
 		
+		switchToAdmin();
+		
 	}
 	
 	IngameProtocolHandler switchToRealTime(MultiplayerGame multiplayer, Character character) 
 	{ 
-		pipeline.remove( "frame" );
+		pipeline.remove( FRAME );
 		pipeline.remove( AdminProtocolHandler.NAME );
-		
-		pipeline.addLast( "frame", IngameProtocolHandler.FRAME_DECODER );
-		
 		IngameProtocolHandler handler = new IngameProtocolHandler( channel, multiplayer, character );
+		
+		activeHandler = handler;
+		
+		
+		pipeline.addLast( FRAME,                      new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
 		pipeline.addLast( IngameProtocolHandler.NAME, handler );
 		
 		adminHandler = null;
@@ -60,14 +69,16 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 	
 	AdminProtocolHandler switchToAdmin()    
 	{
-		pipeline.remove( "frame" );
-		pipeline.remove( IngameProtocolHandler.NAME );
+		pipeline.remove( FRAME );
+		if(pipeline.get(IngameProtocolHandler.NAME) != null)
+			pipeline.remove( IngameProtocolHandler.NAME );
 		
-		pipeline.addLast( "frame", AdminProtocolHandler.FRAME_DECODER );
 		
-		adminHandler = new AdminProtocolHandler( channel, orchestrator );
+		activeHandler = adminHandler = new AdminProtocolHandler( channel, orchestrator, player );
+		
+		pipeline.addLast( FRAME,                     new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
 		pipeline.addLast( AdminProtocolHandler.NAME, adminHandler );
- 		
+		
 		return adminHandler;
 	}
 	

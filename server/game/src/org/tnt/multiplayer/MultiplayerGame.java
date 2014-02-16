@@ -54,13 +54,14 @@ public class MultiplayerGame
 		
 		this.simulator = gameFactory.getSimulation( room.getType() );
 		
-		
-		for(Character character : room.getCharacters().values())
+		int idx = 0;
+		for(Character character : room.getCharacters())
 		{
-			int pid = nextCharId ++;
-			characters.put( character, pid );
+			characters.put( character, idx );
 			
-			updates.put( pid, new LinkedList <IGameUpdate> () );
+			updates.put( idx, new LinkedList <IGameUpdate> () );
+			
+			idx ++;
 		}
 		
 		simulator.setCharacters( characters );

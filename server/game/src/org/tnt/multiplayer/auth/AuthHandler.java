@@ -95,20 +95,26 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
        		ReferenceCountUtil.release(msg); 
        	}
     	
-    	
-		log.debug( "Player %s was succesfully authenticated", credentials );
-		writeAuthResult( ctx,  MSAuthResult.OK );
 
     	/////////////////////////////////////////////
     	// adding game handler with credentials info:
       	
-    	// auth handler is no longer needed:
- //   	ctx.pipeline().remove( NAME );
-    	
+   	
     	GameProtocolHandler handler = new GameProtocolHandler( ctx.channel(), ctx.pipeline(), credentials, orchestrator );
-  //  	ctx.pipeline().addLast( handler );
-      	
-    	orchestrator.registerPlayerHandler( handler );
+     	
+    	if(!orchestrator.registerPlayerHandler( handler ))
+    	{
+       		log.debug( "Player %s was succesfully authenticated", credentials );
+       		writeAuthResult( ctx, MSAuthResult.FAILED_ALREADY_LOGGED_IN);
+    	}    	
+
+        	
+   		log.debug( "Player %s was succesfully authenticated", credentials );
+   		writeAuthResult( ctx,  MSAuthResult.OK );
+
+   	// auth handler is no longer needed:
+    	ctx.pipeline().remove( NAME );
+    	ctx.pipeline().addLast( handler );
 
     }
     
