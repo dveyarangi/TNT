@@ -21,7 +21,7 @@ import com.spinn3r.log5j.Logger;
 
 public class AdminProtocolHandler extends ChannelInboundHandlerAdapter 
 {
-	private final static Logger log = Logger.getLogger(AuthHandler.class);
+	private final static Logger log = Logger.getLogger(AdminProtocolHandler.class);
 	
 	private final MultiplayerOrchestrator orchestrator;
 	
