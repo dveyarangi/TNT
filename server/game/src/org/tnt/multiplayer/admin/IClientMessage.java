@@ -1,16 +1,34 @@
 package org.tnt.multiplayer.admin;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.MultiplayerOrchestrator;
+import org.tnt.multiplayer.MultiplayerHub;
 
+/**
+ * Abstract client message.
+ * All client messages class names are expected to start with "<package>.MC" preffix.
+ * This allows to construct message class name from a shorter and nicer "type" field value.
+ * 
+ * @author fimar
+ */
 public abstract class IClientMessage
 {
-	
-	private String type = this.getClass().getSimpleName().substring( 2 );
-	
-	public String getType() { return type; }
-	
-	public String toString() { return "ADMMSG: " + getType(); }
 
-	abstract void process( Player player, MultiplayerOrchestrator orchestrator );
+	/**
+	 * Message type as it should be specified in JSON
+	 * Auto-detecting message concrete instance type name:
+	 */
+	private String type = this.getClass().getSimpleName().substring( 2 );
+
+	/**
+	 * Executes player management logic associated with this message.
+	 * 
+	 * @param player
+	 * @param orchestrator
+	 */
+	abstract void process( Player player, MultiplayerHub orchestrator );
+	
+	
+	@Override
+	public String toString() { return "ADMMSG: " + type; }
+
 }

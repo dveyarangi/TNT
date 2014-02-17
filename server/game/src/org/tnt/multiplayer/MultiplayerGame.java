@@ -11,12 +11,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 
-import org.tnt.GameType;
-import org.tnt.IGameSimulator;
-import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
-import org.tnt.account.Player;
 import org.tnt.game.GameFactory;
+import org.tnt.game.GameType;
+import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 
 import com.spinn3r.log5j.Logger;
@@ -31,32 +29,52 @@ public class MultiplayerGame
 {
 	private Logger log = Logger.getLogger( MultiplayerGame.class );
 
-	private MultiplayerOrchestrator orchestrator;
+	/**
+	 * Multiplayer hub
+	 */
+	private MultiplayerHub hub;
 	
 	/**
-	 * Characters participating in this game
+	 * Maps short ingame ids to queue of updates to be sent to the client.
 	 */
 	private TIntObjectHashMap<Queue <IGameUpdate>> updates;
 	
+	/**
+	 * Game simulator, encapsulates game logic and generates updates for game clients.
+	 */
 	private IGameSimulator simulator;
 	
-	private IngameDispatcherThread dispatcherThread;
+	/**
+	 * Simulator thread, executes the simulator step by step
+	 */
 	private SimulatorThread simulatorThread;
 	
-	private int nextCharId = 1;
+	/**
+	 * Dispatcher for client updates.
+	 */
+	private IngameDispatcherThread dispatcherThread;
 	
+
+	/**
+	 * Participating characters and their corresponding short ids.
+	 */
 	private Map <Character, Integer> characters = new HashMap <> ();
 	
+	/**
+	 * Characters mapped to ingame communication protocol handlers.
+	 */
 	private Map <Character, IngameProtocolHandler> handlers;
 
-	MultiplayerGame(MultiplayerOrchestrator orchestrator, GameFactory gameFactory, GameRoom room)
+	MultiplayerGame(MultiplayerHub hub, GameFactory gameFactory, GameRoom room)
 	{
-		this.orchestrator = orchestrator;
+		this.hub = hub;
 		
 		this.updates = new TIntObjectHashMap <> ();
 		
+		// create game simulator
 		this.simulator = gameFactory.getSimulation( room.getType() );
-		
+
+		// register characters and ids:
 		int idx = 0;
 		for(Character character : room.getCharacters())
 		{
@@ -74,7 +92,12 @@ public class MultiplayerGame
 
 	public GameType getType() { return simulator.getType();	}
 
-
+	/**
+	 * Start the game threads
+	 * 
+	 * @param threadPool
+	 * @param handlers
+	 */
 	void start(ExecutorService threadPool, Map <Character, IngameProtocolHandler> handlers)
 	{
 		this.simulatorThread  = new SimulatorThread( this, simulator );
@@ -83,21 +106,16 @@ public class MultiplayerGame
 		this.handlers = handlers;
 		
 		this.dispatcherThread = new IngameDispatcherThread( this, handlers );
-		
-/*		for(Character character : handlers.keySet())
-		{
-			int pid = characters.get( character );
-			addUpdate( pid, new GoPacket() );
-		}*/
+
 		
 		threadPool.submit( dispatcherThread );
 	}
-    
-    public void setAcknowledged(Player player)
-    {
-    	
-    }
-    
+
+	/**
+	 * Retrieve client updates for specified character id
+	 * @param pid
+	 * @return
+	 */
 	public Queue<IGameUpdate> getUpdates(int pid)
 	{
 		synchronized( updates )
@@ -113,6 +131,11 @@ public class MultiplayerGame
 		}
 	}
 
+	/**
+	 * Put client updates for specified character id
+	 * @param pid
+	 * @param update
+	 */
 	public void addUpdate( int pid, IGameUpdate update )
 	{
 		synchronized( this.updates )
@@ -122,6 +145,9 @@ public class MultiplayerGame
 		}
 	}
 	
+	/**
+	 * Terminate game threads and 
+	 */
 	public void stop()
 	{
 		simulatorThread.safeStop();
@@ -135,9 +161,14 @@ public class MultiplayerGame
 
 	public void gameOver()
 	{
-		orchestrator.gameOver( this );
+		hub.gameOver( this );
 	}
 
+	/**
+	 * Called when client acknowledges start of this multiplayer game.
+	 * When all clients sent acknowledgment, the game simulators starts.
+	 * @param pid
+	 */
 	public void setGameAcknowledged( int pid )
 	{
 		synchronized( this.updates )
@@ -175,7 +206,11 @@ public class MultiplayerGame
 		}
 	}
 
-
+	/**
+	 * Inform game simulator of incoming player action.
+	 * @param pid
+	 * @param action
+	 */
 	public void addCharacterAction( int pid, ICharacterAction action )
 	{
 		simulator.addCharacterAction( pid, action );

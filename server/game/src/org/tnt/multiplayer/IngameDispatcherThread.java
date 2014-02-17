@@ -3,7 +3,6 @@ package org.tnt.multiplayer;
 import java.util.Map;
 import java.util.Queue;
 
-import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 

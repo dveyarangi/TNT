@@ -1,4 +1,4 @@
-package org.tnt;
+package org.tnt.game;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.tnt.account.Character;
 import org.tnt.multiplayer.ICharacterAction;
+import org.tnt.multiplayer.IGameUpdate;
 
 public interface IGameSimulator
 {

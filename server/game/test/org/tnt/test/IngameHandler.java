@@ -1,18 +1,22 @@
 package org.tnt.test;
 
 
-import org.tnt.IGameUpdate;
-import org.tnt.multiplayer.admin.MSGameDetails;
-import org.tnt.multiplayer.realtime.IngameProtocolHandler;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import org.tnt.multiplayer.IGameUpdate;
+import org.tnt.multiplayer.admin.MSGameDetails;
+
+import com.spinn3r.log5j.Logger;
+
 public class IngameHandler extends ChannelInboundHandlerAdapter
 {
+	
+	private Logger log = Logger.getLogger(this.getClass());
+	
 	private static final int	CLIENT_PACKET_SIZE	= 16;
 
 	private static final int	SERVER_PACKET_SIZE	= 16;
@@ -36,7 +40,9 @@ public class IngameHandler extends ChannelInboundHandlerAdapter
     {
     	ByteBuf buffer = (ByteBuf) msg;
     	if(buffer.readableBytes() < SERVER_PACKET_SIZE)
-    		return; // not yet arrived
+		 {
+			return; // not yet arrived
+		}
     }
 
 
@@ -51,5 +57,13 @@ public class IngameHandler extends ChannelInboundHandlerAdapter
 		
 		channel.writeAndFlush( outBuffer );
 	}
+	
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        ctx.fireChannelInactive();
+        ctx.close();
+        log.info( "Disconnected from server" );
+        System.exit( 0 );
+    }
 
 }

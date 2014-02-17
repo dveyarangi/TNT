@@ -2,6 +2,11 @@ package org.tnt.multiplayer.auth;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Authentication result message sent to client.
+ * 
+ * @author fimar
+ */
 public enum MSAuthResult
 {
 	@SerializedName("0") OK,
@@ -10,7 +15,8 @@ public enum MSAuthResult
 	@SerializedName("3") FAILED_ALREADY_LOGGED_IN,
 	@SerializedName("255") FAILED_SERVER_ERROR;
 
+	/**
+	 * @return true if client is successfully authenticated. 
+	 */
 	public boolean isOk() {	return this == OK; }
-	
-	
 }

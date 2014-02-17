@@ -1,4 +1,4 @@
-package org.tnt;
+package org.tnt.multiplayer;
 
 import org.tnt.multiplayer.realtime.IServerPacket;
 

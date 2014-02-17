@@ -11,11 +11,11 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.tnt.GameType;
 import org.tnt.account.Character;
 import org.tnt.account.Player;
 import org.tnt.account.PlayerStore;
 import org.tnt.game.GameFactory;
+import org.tnt.game.GameType;
 import org.tnt.multiplayer.admin.MCGameRequest;
 import org.tnt.multiplayer.admin.MSGameDetails;
 import org.tnt.multiplayer.admin.MSGo;
@@ -34,7 +34,7 @@ import com.spinn3r.log5j.Logger;
  * @author Fima
  *
  */
-public class MultiplayerOrchestrator
+public class MultiplayerHub
 {
 	/**
 	 * A logger
@@ -79,7 +79,7 @@ public class MultiplayerOrchestrator
 	 */
 	private ExecutorService threadPool = Executors.newCachedThreadPool();
 	
-	public MultiplayerOrchestrator(PlayerStore store)
+	public MultiplayerHub(PlayerStore store)
 	{
 		this.store = store;
 //		registery = new ConnectedPlayersRegistery( store );
@@ -90,12 +90,14 @@ public class MultiplayerOrchestrator
 	 * Called after player had successfully authenticated.
 	 * @param handler
 	 */
-	public boolean registerPlayerHandler( GameProtocolHandler handler )
+	public boolean registerPlayerHandler( Player player, GameProtocolHandler handler )
 	{
-		if(activePlayers.containsKey( handler.getPlayer() ))
+		if(activePlayers.containsKey( player ))
+		{
 			return false;
-		log.debug("Registered player handler for player " + handler.getPlayer());
-		activePlayers.put( handler.getPlayer(), handler );
+		}
+		log.debug("Registered player handler for player " + player);
+		activePlayers.put( player, handler );
 		
 		return true;
 	}
@@ -177,7 +179,9 @@ public class MultiplayerOrchestrator
 			{
 				pendingRoomsByType.remove( gameroom.getType(), gameroom );
 				for(Character roomChar : gameroom.getCharacters())
+				{
 					pendingRoomsByPlayer.remove( roomChar.getPlayer() );
+				}
 				
 				initGame(gameroom);
 				
@@ -245,11 +249,15 @@ public class MultiplayerOrchestrator
 		{			
 			GameRoom room = pendingRoomsByPlayer.get( player );
 			if(room == null)
+			 {
 				return; // not in room or ingame
+			}
 			room.removeCharacter( player );
 
 			if(room.getCharacters().isEmpty())
+			{
 				pendingRoomsByType.remove( room.getType(), room );
+			}
 			
 		}	
 	}

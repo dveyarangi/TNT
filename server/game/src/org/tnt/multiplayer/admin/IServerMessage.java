@@ -1,7 +1,10 @@
 package org.tnt.multiplayer.admin;
 
-import org.tnt.account.Player;
-
+/**
+ * Marker interface for server admin messages
+ * 
+ * @author fimar
+ */
 public interface IServerMessage
 {
 }

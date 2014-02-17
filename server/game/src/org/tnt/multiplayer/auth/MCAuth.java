@@ -2,8 +2,8 @@ package org.tnt.multiplayer.auth;
 
 
 /**
- * Initial authentication packet
- * TODO: should be something smarter
+ * Initial authentication packet from client
+ * TODO: should be something smarter, with SSL auth maybe
  * @author Fima
  *
  */

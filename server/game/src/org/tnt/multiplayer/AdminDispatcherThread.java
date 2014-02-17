@@ -18,7 +18,7 @@ public class AdminDispatcherThread implements Runnable
 {
 	private volatile boolean isAlive = false;
 	
-	private MultiplayerOrchestrator orchestrator;
+	private MultiplayerHub orchestrator;
 	
 	private volatile Queue <IServerMessage> messageQueue = new LinkedList <IServerMessage> ();
 	
@@ -26,7 +26,7 @@ public class AdminDispatcherThread implements Runnable
 	
 	private Logger log = Logger.getLogger( this.getClass() );
 	
-	public AdminDispatcherThread(MultiplayerOrchestrator orchestrator)
+	public AdminDispatcherThread(MultiplayerHub orchestrator)
 	{
 		this.orchestrator = orchestrator;
 	}

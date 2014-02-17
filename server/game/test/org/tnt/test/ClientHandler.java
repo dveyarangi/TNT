@@ -7,7 +7,7 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
-import org.tnt.GameType;
+import org.tnt.game.GameType;
 import org.tnt.multiplayer.admin.MCGameRequest;
 import org.tnt.multiplayer.admin.MSGameDetails;
 import org.tnt.multiplayer.admin.MSGo;

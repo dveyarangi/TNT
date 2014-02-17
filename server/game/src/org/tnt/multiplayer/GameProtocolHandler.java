@@ -7,7 +7,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
-import io.netty.util.ReferenceCountUtil;
 
 import org.tnt.account.Player;
 import org.tnt.multiplayer.admin.AdminProtocolHandler;
@@ -25,23 +24,42 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 	
 	public static final String	FRAME	= "frame";
 	
+	/**
+	 * Channel pipeline, that is managed by this handler.
+	 */
 	private ChannelPipeline pipeline;
+	
+	/**
+	 * Client communication channel
+	 */
 	private Channel channel;
 	
+	/**
+	 * Current protocol mode (admin/ingame)
+	 */
 	private volatile ChannelInboundHandler activeHandler;
-	
-	private MultiplayerOrchestrator orchestrator;
-	
-	private Player player;
-	
+	/**
+	 * Admin protocol handler instance.
+	 */
 	private AdminProtocolHandler adminHandler;
 	
-	public GameProtocolHandler ( Channel channel, ChannelPipeline pipeline, Player player, MultiplayerOrchestrator orchestrator)
+	/**
+	 * Multiplayer hub
+	 */
+	private MultiplayerHub hub;
+	
+	/**
+	 * Player logged into this channel
+	 */
+	private Player player;
+	
+	
+	public GameProtocolHandler ( Channel channel, ChannelPipeline pipeline, Player player, MultiplayerHub hub)
 	{
 		this.pipeline = pipeline;
 		this.channel = channel;
 		
-		this.orchestrator = orchestrator;
+		this.hub = hub;
 		
 		this.player = player;
 		
@@ -49,15 +67,24 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 		
 	}
 	
+	/**
+	 * Reconfigures channel's pipeline for ingame protocol
+	 * 
+	 * @param multiplayer
+	 * @param pid
+	 * @return
+	 */
 	IngameProtocolHandler switchToRealTime(MultiplayerGame multiplayer, int pid) 
 	{ 
+		// removing administration protocol handlers:
 		pipeline.remove( FRAME );
 		pipeline.remove( AdminProtocolHandler.NAME );
-		IngameProtocolHandler handler = orchestrator.createHandler( channel, multiplayer, pid );
+		
+		
+		// registering ingame protocol handler:
+		IngameProtocolHandler handler = hub.createHandler( channel, multiplayer, pid );
 		
 		activeHandler = handler;
-		
-		
 		pipeline.addLast( IngameProtocolHandler.NAME, handler );
 		
 		adminHandler = null;
@@ -65,27 +92,34 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 		return handler;
 	}
 	
+	/**
+	 * Reconfigures channel's pipleline for administration protocol
+	 * @return
+	 */
 	AdminProtocolHandler switchToAdmin()    
 	{
+		// removing ingame protocol handler:
 		pipeline.remove( FRAME );
 		if(pipeline.get(IngameProtocolHandler.NAME) != null)
+		{
 			pipeline.remove( IngameProtocolHandler.NAME );
+		}
 		
 		
-		activeHandler = adminHandler = new AdminProtocolHandler( channel, orchestrator, player );
+		// registering administration protocol handlers:
+		activeHandler = adminHandler = new AdminProtocolHandler( channel, hub, player );
 		
 		pipeline.addLast( FRAME,                     new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
 		pipeline.addLast( AdminProtocolHandler.NAME, adminHandler );
 		
 		return adminHandler;
 	}
-	
 	AdminProtocolHandler getAdminHandler() { return adminHandler; }
 
 	@Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
-    	orchestrator.unregisterPlayerHandler( this.getPlayer() );
+		hub.unregisterPlayerHandler( player );
 	}
 	
 	
@@ -102,7 +136,5 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
     	
     	log.error( "Exception in game protocol", cause );
     }
-
-	public Player getPlayer() { return player; }
     
 }

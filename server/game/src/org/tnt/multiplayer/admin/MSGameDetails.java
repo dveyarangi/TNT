@@ -1,21 +1,27 @@
 package org.tnt.multiplayer.admin;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import org.tnt.account.Player;
-import org.tnt.multiplayer.GameRoom;
 import org.tnt.account.Character;
 
-
+/**
+ * This message is sent by server to inform client about his game room.
+ * This message may be sent several times, as game room settings and participants change.
+ * 
+ * @author fimar
+ */
 @SuppressWarnings( "unused" )
 public class MSGameDetails implements IServerMessage
 {
+	/**
+	 * List of participating players and their ingame details
+	 */
 	private List <PlayerDetails> players;
 
-	
+	/**
+	 * Player's game participation aspect
+	 */
 	private static class PlayerDetails {
 		private long playerId;
 		private long characterId;
@@ -27,6 +33,10 @@ public class MSGameDetails implements IServerMessage
 		}
 	}
 	
+	/**
+	 * Creates a new game details message from list of participating characters. 
+	 * Each character receives a short room id according to his ordinal in this list.
+	 */
 	public MSGameDetails( List<Character> list)
 	{
 		this.players = new LinkedList <> ();
@@ -45,6 +55,4 @@ public class MSGameDetails implements IServerMessage
 			idx ++;
 		}
 	}
-
-	
 }

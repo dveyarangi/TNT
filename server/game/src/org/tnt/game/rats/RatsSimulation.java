@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.tnt.GameType;
-import org.tnt.IGameSimulator;
-import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
+import org.tnt.game.GameType;
+import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.ICharacterAction;
+import org.tnt.multiplayer.IGameUpdate;
 
 public class RatsSimulation implements IGameSimulator
 {

@@ -2,8 +2,6 @@ package org.tnt.game;
 
 import io.netty.channel.Channel;
 
-import org.tnt.GameType;
-import org.tnt.IGameSimulator;
 import org.tnt.game.rats.RatsHandler;
 import org.tnt.game.rats.RatsSimulation;
 import org.tnt.multiplayer.MultiplayerGame;

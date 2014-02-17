@@ -4,8 +4,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.List;
 
-import org.tnt.IGameSimulator;
-import org.tnt.IGameUpdate;
+import org.tnt.game.IGameSimulator;
 
 import com.spinn3r.log5j.Logger;
 

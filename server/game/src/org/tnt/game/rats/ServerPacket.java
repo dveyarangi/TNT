@@ -2,8 +2,8 @@ package org.tnt.game.rats;
 
 import io.netty.buffer.ByteBuf;
 
-import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
+import org.tnt.multiplayer.IGameUpdate;
 import org.tnt.multiplayer.realtime.IServerPacket;
 
 

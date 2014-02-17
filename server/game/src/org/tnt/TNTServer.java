@@ -12,12 +12,10 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringEncoder;
 
-import java.util.Date;
-
 import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
-import org.tnt.multiplayer.MultiplayerOrchestrator;
+import org.tnt.multiplayer.MultiplayerHub;
 import org.tnt.multiplayer.auth.AuthHandler;
 
 public class TNTServer 
@@ -27,7 +25,7 @@ public class TNTServer
 	
 	private PlayerStore store;
 	
-	private MultiplayerOrchestrator orchestrator;
+	private MultiplayerHub orchestrator;
 	
 	private ChannelInitializer <SocketChannel> channelInitializer; 
 	public static final DelimiterBasedFrameDecoder FRAME_DECODER = new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() );
@@ -42,7 +40,7 @@ public class TNTServer
 		this.store = new PlayerStore();
 		
 		// multiplayer hub:
-		this.orchestrator = new MultiplayerOrchestrator(store);
+		this.orchestrator = new MultiplayerHub(store);
 		
 		// authentication handler appendix:
 		this.channelInitializer = new ChannelInitializer<SocketChannel>() {
@@ -59,10 +57,6 @@ public class TNTServer
 
 	public void run() throws Exception
 	{
-		System.out.println("===========================================================");
-		System.out.println("= TNT game server                                         =");
-		System.out.println("===========================================================");
-		System.out.println(" * Started at " + new Date());
 		EventLoopGroup bossGroup   = new NioEventLoopGroup();
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		try
@@ -91,6 +85,9 @@ public class TNTServer
 
 	public static void main( String[] args ) throws Exception
 	{
+		System.out.println("===========================================================");
+		System.out.println("= TNT game server                                         =");
+		System.out.println("===========================================================");
 		TNTConfig config = TNTConfig.load( args );
 
 		new TNTServer( config.getServerConfig() ).run();
