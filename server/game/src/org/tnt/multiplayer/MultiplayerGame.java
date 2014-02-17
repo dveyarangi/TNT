@@ -11,13 +11,15 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 
+import org.tnt.GameType;
 import org.tnt.IGameSimulator;
 import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
 import org.tnt.account.Player;
-import org.tnt.game.SimulatorFactory;
-import org.tnt.multiplayer.realtime.GoPacket;
+import org.tnt.game.GameFactory;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
+
+import com.spinn3r.log5j.Logger;
 
 
 /**
@@ -27,6 +29,7 @@ import org.tnt.multiplayer.realtime.IngameProtocolHandler;
  */
 public class MultiplayerGame
 {
+	private Logger log = Logger.getLogger( MultiplayerGame.class );
 
 	private MultiplayerOrchestrator orchestrator;
 	
@@ -46,7 +49,7 @@ public class MultiplayerGame
 	
 	private Map <Character, IngameProtocolHandler> handlers;
 
-	MultiplayerGame(MultiplayerOrchestrator orchestrator, SimulatorFactory gameFactory, GameRoom room)
+	MultiplayerGame(MultiplayerOrchestrator orchestrator, GameFactory gameFactory, GameRoom room)
 	{
 		this.orchestrator = orchestrator;
 		
@@ -59,16 +62,18 @@ public class MultiplayerGame
 		{
 			characters.put( character, idx );
 			
-			updates.put( idx, new LinkedList <IGameUpdate> () );
-			
 			idx ++;
 		}
 		
-		simulator.setCharacters( characters );
+		simulator.setCharacters( room.getCharacters() );
 		
 		
 		this.handlers = new HashMap <Character, IngameProtocolHandler> ();
 	}
+	
+
+	public GameType getType() { return simulator.getType();	}
+
 
 	void start(ExecutorService threadPool, Map <Character, IngameProtocolHandler> handlers)
 	{
@@ -79,10 +84,11 @@ public class MultiplayerGame
 		
 		this.dispatcherThread = new IngameDispatcherThread( this, handlers );
 		
-		for(Character character : handlers.keySet())
+/*		for(Character character : handlers.keySet())
 		{
-			addUpdate( new GoPacket( characters.get( character ) ) );
-		}
+			int pid = characters.get( character );
+			addUpdate( pid, new GoPacket() );
+		}*/
 		
 		threadPool.submit( dispatcherThread );
 	}
@@ -107,11 +113,10 @@ public class MultiplayerGame
 		}
 	}
 
-	public void addUpdate( IGameUpdate update )
+	public void addUpdate( int pid, IGameUpdate update )
 	{
 		synchronized( this.updates )
 		{
-			int pid = update.getPID();
 			Queue <IGameUpdate> charUpdates  = this.updates.get( pid );
 			charUpdates.add( update );
 		}
@@ -131,6 +136,49 @@ public class MultiplayerGame
 	public void gameOver()
 	{
 		orchestrator.gameOver( this );
+	}
+
+	public void setGameAcknowledged( int pid )
+	{
+		synchronized( this.updates )
+		{
+			// creating new updates queue for this character:
+			Queue <IGameUpdate> pUpdates = new LinkedList <IGameUpdate> ();
+			updates.put( pid, pUpdates );
+			
+			// adding the initial character state update:
+			IGameUpdate update = simulator.getCharacterUpdate( pid );
+			if(update == null)
+			{
+				log.error( "Got null update from game simulator %s", new Exception(), simulator );
+				return;
+			}
+			
+			pUpdates.add( update );
+			log.debug("Game %s character [%d] has acknowledged game start", this.toString(), pid);
+			
+			// checking if all clients have acknowledged the game start:
+			if(updates.size() == characters.size())
+			{
+				for(Character character : characters.keySet())
+				{
+					IngameProtocolHandler handler = handlers.get( character );
+					int cpid = characters.get( character );
+					handler.setStarted( updates.get( cpid ).poll() );
+				}
+				
+				simulatorThread.togglePause();
+				dispatcherThread.togglePause();
+				
+				log.debug("Game %s has started", this.toString());
+			}
+		}
+	}
+
+
+	public void addCharacterAction( int pid, ICharacterAction action )
+	{
+		simulator.addCharacterAction( pid, action );
 	}
 
 

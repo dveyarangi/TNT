@@ -1,17 +1,20 @@
 package org.tnt;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.tnt.account.Character;
+import org.tnt.multiplayer.ICharacterAction;
 
 public interface IGameSimulator
 {
 	
 	public GameType getType();
 	
-	public void setCharacters( Map<Character, Integer> characters );
+	public void setCharacters( List <Character> characters );
 	
 	public void init();
 	
@@ -20,10 +23,14 @@ public interface IGameSimulator
 	 * @param time
 	 * @return false is the game is over
 	 */
-	public List <IGameUpdate> step(long time);
+	public void step(long time, TIntObjectHashMap <IGameUpdate> updates);
 	
 	public boolean isOver();
 
 	public int getMaxCapacity();
+
+	public void addCharacterAction( int pid, ICharacterAction action );
+
+	public IGameUpdate getCharacterUpdate( int pid );
 
 }

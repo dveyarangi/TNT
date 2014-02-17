@@ -1,5 +1,7 @@
 package org.tnt.multiplayer;
 
+import io.netty.channel.Channel;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -13,7 +15,7 @@ import org.tnt.GameType;
 import org.tnt.account.Character;
 import org.tnt.account.Player;
 import org.tnt.account.PlayerStore;
-import org.tnt.game.SimulatorFactory;
+import org.tnt.game.GameFactory;
 import org.tnt.multiplayer.admin.MCGameRequest;
 import org.tnt.multiplayer.admin.MSGameDetails;
 import org.tnt.multiplayer.admin.MSGo;
@@ -65,7 +67,7 @@ public class MultiplayerOrchestrator
 	private Map <Player, MultiplayerGame> runningGames = new IdentityHashMap<> ();
 	
 	
-	private SimulatorFactory gameFactory = new SimulatorFactory();
+	private GameFactory gameFactory = new GameFactory();
 	
 	/**
 	 * Player data storage
@@ -203,13 +205,15 @@ public class MultiplayerOrchestrator
 				
 				GameProtocolHandler handler = activePlayers.get( player );
 				
-				
+				// sending game ready to all participants:
 				handler.getAdminHandler().write( MSGo.GO );
+				
+				
 				/////////////////////////////////////////////////////////////////////
 				// this was the last admin message, now real-time protocol starts
 				
 				// swapping to real time protocol:
-				handlers.put( gameCharacter, handler.switchToRealTime( game, gameCharacter ) );
+				handlers.put( gameCharacter, handler.switchToRealTime( game, game.getCharacters().get( gameCharacter ) ) );
 				
 				// updating running games registry:
 				runningGames.put( player, game );
@@ -240,6 +244,8 @@ public class MultiplayerOrchestrator
 		synchronized(pendingRoomsByType)
 		{			
 			GameRoom room = pendingRoomsByPlayer.get( player );
+			if(room == null)
+				return; // not in room or ingame
 			room.removeCharacter( player );
 
 			if(room.getCharacters().isEmpty())
@@ -248,5 +254,9 @@ public class MultiplayerOrchestrator
 		}	
 	}
 
-	
+	public IngameProtocolHandler createHandler( Channel channel, MultiplayerGame multiplayer, int pid )
+	{
+		return gameFactory.getIngameHandler( channel, multiplayer, pid );
+
+	}
 }

@@ -1,31 +1,33 @@
 package org.tnt.game.rats;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import gnu.trove.map.hash.TIntObjectHashMap;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.tnt.GameType;
 import org.tnt.IGameSimulator;
 import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
+import org.tnt.multiplayer.ICharacterAction;
 
 public class RatsSimulation implements IGameSimulator
 {
 	
 	private static final int CHARS_IN_RACE = 2;
 	
-	private Map<Character, Integer> characters = new HashMap<Character, Integer> ();
+	private List <Character> characters = new ArrayList<Character> ();
 	
 	private boolean isOver = true;
 	
+	private int time = 0;
+	
 
 	@Override
-	public void setCharacters( Map<Character, Integer> character )
+	public void setCharacters( List <Character> characters )
 	{
-		this.characters.putAll( characters );
+		this.characters.addAll( characters );
 	}
 
 
@@ -36,13 +38,17 @@ public class RatsSimulation implements IGameSimulator
 	}
 
 	@Override
-	public List<IGameUpdate> step( long time )
+	public void step( long time, TIntObjectHashMap <IGameUpdate> updates)
 	{
-		List <IGameUpdate> updates = new LinkedList <IGameUpdate> ();
+		this.time = (int)time;
 		
-		// TODO: harr, calculation
-		
-		return updates;
+		int idx = 0;
+		for(Character character : characters)
+		{
+			updates.put( idx, getCharacterUpdate( idx ) );
+			idx ++;
+		}
+
 	}
 
 	@Override
@@ -53,5 +59,21 @@ public class RatsSimulation implements IGameSimulator
 
 	@Override
 	public GameType getType() {	return GameType.RAT_RACE; }
+
+
+	@Override
+	public void addCharacterAction( int pid, ICharacterAction action )
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public IGameUpdate getCharacterUpdate( int pid )
+	{
+		Character character = characters.get( pid );
+		return new ServerPacket( pid, time, 0, CharacterAction.START );
+	}
 
 }

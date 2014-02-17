@@ -23,6 +23,8 @@ public class IngameDispatcherThread implements Runnable
 	
 	private volatile boolean isAlive = false;
 	
+	private volatile boolean isPaused = true;
+	
 	private static final long HEARTBEAT = 50; // ms
 	
 	private Map <Character, IngameProtocolHandler> handlers;
@@ -46,6 +48,19 @@ public class IngameDispatcherThread implements Runnable
 		Queue <IGameUpdate> updates;
 		while(isAlive)
 		{
+			try
+			{
+				Thread.sleep(HEARTBEAT);
+			}
+			catch( InterruptedException e )
+			{
+				isAlive = false;
+				log.fatal( e );
+			}
+			
+			if(isPaused)
+				continue;
+			
 			for(Character character : multiplayer.getCharacters().keySet())
 			{
 				updates = multiplayer.getUpdates( multiplayer.getCharacters().get( character ) );
@@ -58,15 +73,6 @@ public class IngameDispatcherThread implements Runnable
 				}
 			}
 			
-			try
-			{
-				Thread.sleep(HEARTBEAT);
-			}
-			catch( InterruptedException e )
-			{
-				isAlive = false;
-				log.fatal( e );
-			}
 		}
 	}
 	
@@ -74,4 +80,6 @@ public class IngameDispatcherThread implements Runnable
 	
 	public String toString() { return "dispatcher-" + multiplayer.toString(); }
 	
+	public void togglePause() { this.isPaused = !this.isPaused; }
+
 }

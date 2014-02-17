@@ -9,7 +9,6 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.util.ReferenceCountUtil;
 
-import org.tnt.account.Character;
 import org.tnt.account.Player;
 import org.tnt.multiplayer.admin.AdminProtocolHandler;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
@@ -50,16 +49,15 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
 		
 	}
 	
-	IngameProtocolHandler switchToRealTime(MultiplayerGame multiplayer, Character character) 
+	IngameProtocolHandler switchToRealTime(MultiplayerGame multiplayer, int pid) 
 	{ 
 		pipeline.remove( FRAME );
 		pipeline.remove( AdminProtocolHandler.NAME );
-		IngameProtocolHandler handler = new IngameProtocolHandler( channel, multiplayer, character );
+		IngameProtocolHandler handler = orchestrator.createHandler( channel, multiplayer, pid );
 		
 		activeHandler = handler;
 		
 		
-		pipeline.addLast( FRAME,                      new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
 		pipeline.addLast( IngameProtocolHandler.NAME, handler );
 		
 		adminHandler = null;
@@ -94,11 +92,7 @@ public class GameProtocolHandler extends ChannelInboundHandlerAdapter
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
     {
-    	try {
-			activeHandler.channelRead( ctx, msg );
-        } finally {
-            ReferenceCountUtil.release(msg);
-        }	        
+		activeHandler.channelRead( ctx, msg );
     }
 
     @Override

@@ -38,14 +38,12 @@ public class MockGameClient extends Thread
 		String authMessage = gson.toJson( new MCAuth( playerId ) );
 //		ByteBuf buf = Unpooled.wrappedBuffer( authMessage.getBytes() ); 
 		log.debug( "Sending message to server: " + authMessage );
+		
 		// sending auth message
 		client.getChannel().writeAndFlush( authMessage + "\r\n" );
 		
-
 		while(true)
 		{
-			
-			
 			try
 			{
 				Thread.sleep( 1000 );
@@ -54,7 +52,6 @@ public class MockGameClient extends Thread
 			{
 				e.printStackTrace();
 			}
-			
 		}
 	}
 }

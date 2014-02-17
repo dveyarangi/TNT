@@ -38,7 +38,7 @@
 	<target name="compile" depends="init">
    		<delete dir="${classes.dir}" />
 	    <mkdir dir="${classes.dir}" />
-	    <javac srcdir="${src.dir}" destdir="${classes.dir}" target="1.6" source="1.6">
+	    <javac srcdir="${src.dir}" destdir="${classes.dir}" target="1.7" source="1.7">
 	    	<classpath>
 	    		<fileset dir="${lib.dir}" />
 	    	</classpath>

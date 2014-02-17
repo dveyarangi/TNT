@@ -1,5 +1,7 @@
 package org.tnt.multiplayer;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
+
 import java.util.List;
 
 import org.tnt.IGameSimulator;
@@ -45,7 +47,8 @@ public class SimulatorThread implements Runnable
 	{
 		simulator.init();
 		
-		List <IGameUpdate> updates;
+		
+		TIntObjectHashMap <IGameUpdate> updatesBuffer = new TIntObjectHashMap <> ();
 		
 		long updateTime = startTime = System.nanoTime();
 		long now;
@@ -60,12 +63,13 @@ public class SimulatorThread implements Runnable
 				time += (now - updateTime);
 
 				// advancing game and getting updates
-				updates = simulator.step( time );
+				simulator.step( time, updatesBuffer );
 				
 				// dispatching updates
 				// TODO: should be a separate controllable frequency
-				for(IGameUpdate update : updates)
-					multiplayer.addUpdate( update );
+				// TODO: this copying is unnecessary
+				for(int pid : updatesBuffer.keys())
+					multiplayer.addUpdate( pid, updatesBuffer.get( pid ) );
 			}
 			
 			updateTime = now; 
@@ -83,7 +87,14 @@ public class SimulatorThread implements Runnable
 		multiplayer.gameOver();
 	}
 	
-	public void togglePause() { this.isPaused = !this.isPaused; }
+	public void togglePause() 
+	{ 
+		this.isPaused = !this.isPaused;
+		if(isPaused)
+			log.debug( "Game simulator is paused." );
+		else
+			log.debug( "Game simulator is unpaused." );
+	}
 	
 	public boolean isPaused() { return isPaused; }
 

@@ -5,62 +5,80 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.FixedLengthFrameDecoder;
 
 import org.tnt.IGameUpdate;
 import org.tnt.account.Character;
+import org.tnt.multiplayer.ICharacterAction;
 import org.tnt.multiplayer.MultiplayerGame;
 
-public class IngameProtocolHandler extends ChannelInboundHandlerAdapter 
+public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter 
 {
-	private static final int IN_PACKET_SIZE = 128;
-	private static final int OUT_PACKET_SIZE = 128;
-	public static final FixedLengthFrameDecoder FRAME_DECODER = new FixedLengthFrameDecoder( OUT_PACKET_SIZE );
+//	public static final FixedLengthFrameDecoder FRAME_DECODER = new FixedLengthFrameDecoder( OUT_PACKET_SIZE );
 	
 	private ByteBuf outBuffer;
 	
 	private MultiplayerGame multiplayer;
-	private Character character;
 	
-	private enum GameState { INFORMING, STARTING, RUNNING, OVER };
+	private int pid;
 	
-	private GameState state;
+	private enum GameState { STARTING, RUNNING, OVER };
+	
+	private GameState state = GameState.STARTING;
 	
 	private Channel channel;
 	
 	public static final String	NAME	= "ingame";
 	
-	public IngameProtocolHandler(Channel channel, MultiplayerGame multiplayer, Character character)
+//	private static final IGameUpdate GO_PACKET = new GoPacket();
+	
+	public IngameProtocolHandler(Channel channel, MultiplayerGame multiplayer, int pid)
 	{
 		this.channel = channel;
 		this.multiplayer = multiplayer;
-		this.character = character;
+		this.pid = pid;
 		
-		outBuffer = Unpooled.wrappedBuffer( new byte [ OUT_PACKET_SIZE ] );
+		outBuffer = Unpooled.wrappedBuffer( new byte [ getServerPacketSize() ] );
 	}
+	
+	public abstract int getServerPacketSize();
+	public abstract int getClientPacketSize();
 	
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
     {
     	ByteBuf buffer = (ByteBuf) msg;
-    	if(buffer.readableBytes() < IN_PACKET_SIZE)
+    	if(buffer.readableBytes() < getClientPacketSize())
     		return; // not yet arrived
     	
     	switch(state)
     	{
-    	case INFORMING:
-//    	   	multiplayer.addPlayerAcknowledgement();
+    	case STARTING:
+    	   	multiplayer.setGameAcknowledged( pid );
     	   	break;
+
+    	case RUNNING:	
+    		multiplayer.addCharacterAction( pid, parseClientUpdate( buffer ) );
+    		break;
+    	case OVER:
+    		break;
     	}    	
     }
 
+	public void setStarted( IGameUpdate update) 
+    {
+    	state = GameState.RUNNING;
+    	write( update );
+    }
 
-
+    protected abstract ICharacterAction parseClientUpdate( ByteBuf buffer );
+    
 	public void write( IGameUpdate update )
 	{
 		outBuffer.clear();
+		outBuffer.setZero( 0, getServerPacketSize() );
 		
 		update.write( outBuffer );
+		outBuffer.setIndex( 0, getServerPacketSize() );
 		
 		channel.writeAndFlush( outBuffer );
 	}

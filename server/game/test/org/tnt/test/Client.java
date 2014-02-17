@@ -35,10 +35,6 @@ public class Client
 				@Override
 				public void initChannel( SocketChannel ch ) throws Exception
 				{
-					ch.pipeline().addLast( new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
-					ch.pipeline().addLast( new StringDecoder());
-					ch.pipeline().addLast( new StringEncoder());
-					
 					ch.pipeline().addLast( new ClientHandler( playerId, charId) );
 				}
 			} );

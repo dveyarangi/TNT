@@ -61,7 +61,6 @@ public class ServerPacket implements IGameUpdate
 
 	}
 
-	@Override
 	public int getPID()
 	{
 		return pid;

@@ -10,11 +10,9 @@ public class GoPacket implements IGameUpdate
 	
 	private static byte [] message = "GOGO".getBytes(CharsetUtil.US_ASCII);
 	
-	private int pid;
-	
-	public GoPacket(int pid) 
+	public GoPacket() 
 	{ 
-		this.pid = pid; 
+
 	}
 
 	@Override
@@ -25,8 +23,5 @@ public class GoPacket implements IGameUpdate
 
 	@Override
 	public int getPacketSize() { return 4; }
-
-	@Override
-	public int getPID() { return pid; }
 
 }

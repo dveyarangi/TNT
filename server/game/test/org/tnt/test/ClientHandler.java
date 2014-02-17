@@ -2,12 +2,17 @@ package org.tnt.test;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 
 import org.tnt.GameType;
 import org.tnt.multiplayer.admin.MCGameRequest;
 import org.tnt.multiplayer.admin.MSGameDetails;
 import org.tnt.multiplayer.admin.MSGo;
 import org.tnt.multiplayer.auth.MSAuthResult;
+import org.tnt.multiplayer.realtime.GoPacket;
 
 import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;
@@ -18,11 +23,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
 	private Logger log = Logger.getLogger(this.getClass());
 	
 	private Gson gson = new Gson();
+
 	
-	private boolean isAuthed = false;
-	private boolean isGameRequested = false;
-	private boolean isGameInited = false;
-	private boolean isGameAcknowledged = false;
+	private enum ClientState {
+		STARTED, CONNECTED, GAME_REQUESTED, GAME_READY, INGAME
+	}
+	
+	ClientState state = ClientState.STARTED;
 
 	private int	playerId;
 
@@ -38,7 +45,10 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
 	
 	@Override
     public void channelActive(final ChannelHandlerContext ctx) {
-    }
+		ctx.pipeline().addFirst( "string-encoder", new StringEncoder());
+		ctx.pipeline().addFirst( "string-decoder", new StringDecoder());
+		ctx.pipeline().addFirst( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
+   }
 	
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
@@ -46,37 +56,41 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
     	String jsonStr = (String) msg;
     	log.debug( "Got message from server: " + jsonStr );
     	
-    	if(! isAuthed)
+    	switch(state)
     	{
+    	case STARTED:
     		if(! doAuth( jsonStr, ctx ) )
 			{
     			ctx.close();
 				return;
 			}
-     	}
-    	
-    	if(! isGameRequested)
-    	{
-    		doRequestGame( ctx );
     		
-    		return;
-    	}
+    	case CONNECTED:
+    		doRequestGame( ctx );
+    		break;
     	
-    	if(! isGameAcknowledged)
-    	{
+    	case GAME_REQUESTED:
     		doInitGame( jsonStr, ctx );
-    		return;
-    	}
+    		break;
 
-    	
+    	}
     }
     
     private void doAcknowledgeGame( String jsonStr, ChannelHandlerContext ctx )
 	{
     	MSGo result = gson.fromJson( jsonStr, MSGo.class );
  		log.debug("Received game GO!: " + jsonStr);
- 		 		
-		isGameAcknowledged = true;
+ 		
+ 		ctx.pipeline().remove( "frame" );
+		ctx.pipeline().remove( "string-encoder" );
+		ctx.pipeline().remove( "string-decoder" );
+		ctx.pipeline().remove( this );
+		IngameHandler handler = new IngameHandler(ctx.channel(), gameDetails);
+		ctx.pipeline().addLast( "ingame", handler );
+		
+		handler.write( new GoPacket() );
+
+		state = ClientState.GAME_READY;
 		
 	}
 
@@ -86,7 +100,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
 	    	gameDetails = gson.fromJson( jsonStr, MSGameDetails.class );
 	  		log.debug("Received game details: " + jsonStr);
 	   		
-			isGameInited = true;
+			state = ClientState.GAME_REQUESTED;
 		}
 		catch(Exception e) // TODO: that is bad, but i am lazy
 		{
@@ -103,7 +117,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
 		log.debug( "Sending game request:" + jsonStr );
 		ctx.writeAndFlush( jsonStr + "\r\n" );
    		
- 		isGameRequested = true;
+		state = ClientState.GAME_REQUESTED;
 	}
 
 	/**
@@ -121,7 +135,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
     		return false;
     	}
    		
-		isAuthed = true;
+		state = ClientState.CONNECTED;
    	
    		log.debug("Successfully logged into server.");
    	  		    	
