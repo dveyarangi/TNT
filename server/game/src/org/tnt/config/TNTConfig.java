@@ -6,7 +6,6 @@ import java.io.InputStream;
 import yarangi.files.FileLoader;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -36,17 +35,20 @@ public class TNTConfig
 
 			String jsonString = FileLoader.loadFile( stream );
 			
-			TNTConfig config = (TNTConfig) gson.fromJson( jsonString, TNTConfig.class );
-			log.warn("Loaded server configuration file [%s].", DEFAULT_CONFIG_FILE);
+			TNTConfig config = gson.fromJson( jsonString, TNTConfig.class );
+			log.info("Using server configuration file [%s].", DEFAULT_CONFIG_FILE);
 			
 			return config;
 		}
 		catch(Exception e)
 		{
-			log.info("Could not load configuration file [%s], using default configuration.", e, DEFAULT_CONFIG_FILE);
+			log.warn("Could not load configuration file [%s], using default configuration.", e, DEFAULT_CONFIG_FILE);
 		}
 		finally {
-			try { if(stream != null) stream.close(); }	
+			try { if(stream != null)
+			{
+				stream.close();
+			} }	
 			catch( IOException e ) { log.error("Failed to close stream [%s].", e, DEFAULT_CONFIG_FILE); }
 		}
 		

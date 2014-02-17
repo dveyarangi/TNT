@@ -12,6 +12,8 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringEncoder;
 
+import java.util.Date;
+
 import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
@@ -57,6 +59,10 @@ public class TNTServer
 
 	public void run() throws Exception
 	{
+		System.out.println("===========================================================");
+		System.out.println("= TNT game server                                         =");
+		System.out.println("===========================================================");
+		System.out.println(" * Started at " + new Date());
 		EventLoopGroup bossGroup   = new NioEventLoopGroup();
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		try

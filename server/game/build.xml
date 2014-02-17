@@ -16,18 +16,30 @@
 	<property name="classes.dir"   location="${build.dir}/classes"/>
 	<property name="dist.dir"      location="${build.dir}/${name}_b${build.number}"/>
 	<property name="dist.lib.dir"  location="${dist.dir}/lib"/>
+	<property name="dist.log.dir"       location="${dist.dir}/log"/>
+	<property name="dist.etc.dir"       location="${dist.dir}/etc"/>
+	<property name="dist.conf.dir"       location="${dist.dir}/conf"/>
 			
 	<target name="init">
         <mkdir dir="${build.dir}" />
         <mkdir dir="${dist.dir}" />
+        <mkdir dir="${dist.log.dir}" />
+        <mkdir dir="${dist.etc.dir}" />
+        <mkdir dir="${dist.conf.dir}" />
 	    <copy todir="${dist.lib.dir}">
 	        <fileset dir="${lib.dir}">
  				<include name="**/*.jar"/>
  				<exclude name="*test*"/>
 	        </fileset>
 	    </copy>
-	    <copy todir="${dist.dir}">
+	    <copy todir="${dist.etc.dir}">
 	        <fileset dir="${etc.dir}">
+ 				<include name="**/*"/>
+ 				<exclude name="*test*"/>
+	        </fileset>
+	    </copy>
+	    <copy todir="${dist.conf.dir}">
+	        <fileset dir="resources">
  				<include name="**/*"/>
  				<exclude name="*test*"/>
 	        </fileset>
