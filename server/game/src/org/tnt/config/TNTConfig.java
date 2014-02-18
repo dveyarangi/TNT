@@ -36,7 +36,7 @@ public class TNTConfig
 			String jsonString = FileLoader.loadFile( stream );
 			
 			TNTConfig config = gson.fromJson( jsonString, TNTConfig.class );
-			log.info("Using server configuration file [%s].", DEFAULT_CONFIG_FILE);
+			log.debug("Using configuration file [%s].", DEFAULT_CONFIG_FILE);
 			
 			return config;
 		}

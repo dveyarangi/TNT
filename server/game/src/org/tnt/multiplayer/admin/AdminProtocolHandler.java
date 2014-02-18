@@ -25,45 +25,45 @@ import com.spinn3r.log5j.Logger;
  */
 public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 {
-	private final static Logger log = Logger.getLogger( AdminProtocolHandler.class );
+	private final static Logger		log				= Logger.getLogger( AdminProtocolHandler.class );
 
 	/**
 	 * Handler name in netty pipeline
 	 */
-	public static final String NAME = "admin";
+	public static final String		NAME			= "admin";
 
 	/**
 	 * Multiplayer service
 	 */
-	private final MultiplayerHub orchestrator;
+	private final MultiplayerHub	orchestrator;
 
 	/**
 	 * Json encoder/decoder
 	 */
-	private Gson inGson, outGson;
+	private Gson					inGson, outGson;
 
 	/**
 	 * Json string encoding
 	 */
-	private static final Charset ENCODING = CharsetUtil.UTF_8;
+	private static final Charset	ENCODING		= CharsetUtil.UTF_8;
 
 	/**
 	 * Client messages autoresolve preffix. Used by {@link #inGson} to load
 	 * messages into correct instance of {@link IClientMessage}
 	 */
-	private static final String MESSAGE_PREFIX = "org.tnt.multiplayer.admin.MC";
+	private static final String		MESSAGE_PREFIX	= "org.tnt.multiplayer.admin.MC";
 
 	/**
 	 * Player that is managed by this handler.
 	 */
-	private Player player;
+	private Player					player;
 
 	/**
 	 * Network channel this handler manages.
 	 */
-	private Channel channel;
+	private Channel					channel;
 
-	public AdminProtocolHandler(Channel channel, final MultiplayerHub orchestrator, Player player)
+	public AdminProtocolHandler( Channel channel, final MultiplayerHub orchestrator, Player player )
 	{
 
 		this.orchestrator = orchestrator;
@@ -75,7 +75,8 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 		// inbound messages are parsed using custom type adapter that allows
 		// loading concrete
 		// instances of IClientMessage
-		this.inGson = new GsonBuilder().registerTypeAdapter( IClientMessage.class, new AbstractElementAdapter <IClientMessage>( MESSAGE_PREFIX ) ).create();
+		this.inGson = new GsonBuilder().registerTypeAdapter( IClientMessage.class,
+				new AbstractElementAdapter<IClientMessage>( MESSAGE_PREFIX ) ).create();
 
 		// outbound messages are parsed by default gson parser
 		this.outGson = new GsonBuilder().create();
@@ -119,15 +120,17 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 
 			if( message instanceof MCQuit )
 			{ // game quit message is sent when player decides to leave game
-			  // lobby or cancel matchfinding
+				// lobby or cancel matchfinding
 				orchestrator.removeFromGame( player );
-			} else
+			}
+			else
 			{
 				// executing message logic:
 				message.process( player, orchestrator );
 			}
 
-		} finally
+		}
+		finally
 		{
 			ReferenceCountUtil.release( msg );
 		}
