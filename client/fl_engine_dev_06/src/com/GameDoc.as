@@ -3,6 +3,7 @@ package com
 	import com.background.BackgroundHolder;
 	import com.character.SimpleRat;
 	import com.events.GameEvent;
+	import com.events.UiEvent;
 	import com.ui.InterfaceHolder;
 	import flash.display.MovieClip;
 	import flash.events.Event;
@@ -16,11 +17,16 @@ package com
 	public class GameDoc extends MovieClip 
 	{
 		///////////////////////////////////////////////////////////////// hardcoded settings. WILL BE CHANGED BY DIMANIC
-		public var distance:uint = 500; /// Distance to run (Meter)
+		public var distance:uint = 300; /// Distance to run (Meter)
 		public var topSpeed:Number = 64; /// Character top speed (M/s)
 		public var minSpeed:Number = 10; /// Character minimum speed (M/s)
 		public var acseleration:Number = 0.014; /// Character acselerattion (+M/s)
 		public var charState:String = "wait"; /// Character State 
+		public var charAction:Object =  null; /// Character Action
+		public var actions:Array; /// Hollds avaible Cahracter Actions
+		
+				
+		public var finalPlayerTime:Number = 0; // HOLDS TIME OF PLAYER
 
 		/////////////////////////////////////////////////////////////////
 
@@ -44,7 +50,8 @@ package com
 			addChild(engine);
 			engine.setupNewGame();
 			
-			stage.dispatchEvent(new GameEvent(GameEvent.START));
+			stage.dispatchEvent (new UiEvent(UiEvent.READY_FOR_UI));
+			stage.dispatchEvent(new GameEvent(GameEvent.START)); /// MOVE IT TO REAL GAME START!!!!!!!
 	
 		}
 		
@@ -53,6 +60,7 @@ package com
 			topSpeed = rat.TOP_SPEED;
 			minSpeed = rat.MIN_SPEED;
 			acseleration = rat.ACSELERATION;
+			actions = rat.actions.slice(0);
 			rat.setup();
 		}
 		

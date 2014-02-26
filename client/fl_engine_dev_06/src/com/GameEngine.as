@@ -23,8 +23,10 @@ package com
 		
 		private var updateGameTimer:Timer = new Timer(UPDATE_GAME_TIME);
 		private var updateDisplayTimer:Timer = new Timer(100);
+
 		
 		private var go:Boolean = false;
+		private var finish:Boolean = false;
 		
 		public function GameEngine()
 		{
@@ -34,7 +36,7 @@ package com
 		public function setupNewGame():void
 		{
 			stage.addEventListener(GameEvent.START, onGameStart);
-			stage.addEventListener(GameEvent.START_RUN, onPlayerStart);
+			stage.addEventListener(GameEvent.PLAYER_START_RUN, onPlayerStart);
 			go = false;
 		
 		}
@@ -46,6 +48,7 @@ package com
 			currentSpeed = 0;
 			currentTime = 0;
 			go = true;
+			finish = false;
 			startDisplayUpdate();
 		}
 		
@@ -60,7 +63,7 @@ package com
 			}
 			else
 			{
-				trace("Engine: FALSH STARTg!!!!")
+				trace("Engine: FALSH START!!!!")
 				stage.dispatchEvent(new GameEvent(GameEvent.FALSE_START));
 				stopDisplayUpdate();
 			}
@@ -89,6 +92,11 @@ package com
 					currentSpeed -= (MovieClip(root).acseleration);
 					if (currentSpeed < MovieClip(root).minSpeed)
 					{
+						if (!finish) {
+							MovieClip(root).topSpeed = MovieClip(root).rat.TOP_SPEED;
+							MovieClip(root).minSpeed = MovieClip(root).rat.MIN_SPEED;
+							MovieClip(root).acseleration = MovieClip(root).rat.ACSELERATION;
+						}
 						currentSpeed = MovieClip(root).minSpeed
 						MovieClip(root).charState = "acelerate";
 						stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
@@ -97,29 +105,39 @@ package com
 				
 				case "run": 
 					break;
-				
-				case "jump": 
-					break;
+
 			}
-			
-			
-			
+
 			currentPosition += (currentSpeed / 100);
 			
 			if (currentPosition >= MovieClip(root).distance)
 			{
+				if (!finish)
+				{
+					stage.dispatchEvent(new GameEvent(GameEvent.PLAYER_FINISHED));
+					MovieClip(root).minSpeed = 0;
+					MovieClip(root).acseleration = 2;
+					MovieClip(root).charState = "break";
+					stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
+					MovieClip(root).finalPlayerTime = currentTime;
+					currentPosition = MovieClip(root).distance;
+					updateUiDisplay();
+					stopDisplayUpdate();
+					finish = true;
+				}
 				
-				stage.dispatchEvent(new GameEvent(GameEvent.END));
-				MovieClip(root).charState = "break";
-				stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
-				currentPosition = MovieClip(root).distance;
-				updateDisplay();
-				stopGameUpdate();
-				stopDisplayUpdate();
+				if (finish && currentSpeed <= 0)
+				{
+					stopGameUpdate();
+					stage.dispatchEvent(new GameEvent(GameEvent.END));
+					MovieClip(root).charState = "wait";
+					stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
+				}
+				
 			}
 		}
 		
-		private function updateDisplay(e:TimerEvent = null):void
+		private function updateUiDisplay(e:TimerEvent = null):void
 		{
 			currentTime += (UPDATE_GAME_TIME / 100);
 			stage.dispatchEvent(new UiEvent(UiEvent.UPDATE_UI));
@@ -142,14 +160,14 @@ package com
 		private function startDisplayUpdate():void
 		{
 			updateDisplayTimer.reset();
-			updateDisplayTimer.addEventListener(TimerEvent.TIMER, updateDisplay);
+			updateDisplayTimer.addEventListener(TimerEvent.TIMER, updateUiDisplay);
 			updateDisplayTimer.start();
 		}
 		
 		private function stopDisplayUpdate():void
 		{
 			updateDisplayTimer.stop();
-			updateDisplayTimer.removeEventListener(TimerEvent.TIMER, updateDisplay);
+			updateDisplayTimer.removeEventListener(TimerEvent.TIMER, updateUiDisplay);
 		
 		}
 		//////////////////////////////////////////////////////////////////////////////////////////// START STOP TIMERS

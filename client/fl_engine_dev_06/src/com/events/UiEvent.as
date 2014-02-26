@@ -8,7 +8,7 @@ package com.events
 	 */
 	public class UiEvent extends Event 
 	{
-		
+		public static const READY_FOR_UI:String = "readyForUi"; // DATA ready to build UI
 		public static const UPDATE_UI:String = "updateUi"; // update UI
 		
 		public function UiEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false) 

@@ -10,11 +10,11 @@ package com.events
 	{
 		
 		public static const CHANGE_STATE:String = "changeState"; // start game
+		public static const ACTION:String = "action"; // start game
 		
 		public function CharacterEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false) 
 		{ 
 			super(type, bubbles, cancelable);
-			
 		} 
 		
 		public override function clone():Event 
