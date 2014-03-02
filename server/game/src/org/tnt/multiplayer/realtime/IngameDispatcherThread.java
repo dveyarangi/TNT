@@ -45,6 +45,7 @@ public class IngameDispatcherThread implements Runnable
 	public void run()
 	{
 		isAlive = true;
+		int pid;
 		
 		Queue <IGameUpdate> updates;
 		while(isAlive)
@@ -60,11 +61,14 @@ public class IngameDispatcherThread implements Runnable
 			}
 			
 			if(isPaused)
-				continue;
-			
-			for(Character character : multiplayer.getCharacters().keySet())
 			{
-				updates = multiplayer.getUpdates( multiplayer.getCharacters().get( character ) );
+				continue;
+			}
+			
+			pid = 0;
+			for(Character character : multiplayer.getCharacters())
+			{
+				updates = multiplayer.getUpdates( pid );
 				
 				
 				for(IGameUpdate update : updates)
@@ -72,6 +76,8 @@ public class IngameDispatcherThread implements Runnable
 					ICharacterDriver driver = drivers.get( character.getPlayer() );
 					driver.update( update ); 
 				}
+				
+				pid ++;
 			}
 			
 		}

@@ -59,23 +59,26 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 		
 		synchronized(runningGames)
 		{
-			for(Character gameCharacter : game.getCharacters().keySet())
+			int pid = 0;
+			for(Character character : game.getCharacters())
 			{
-				Player player = gameCharacter.getPlayer();
+				Player player = character.getPlayer();
 				
 				IPlayerDriver playerDriver = hub.getPlayer( player );
 				
 				// sending game ready to all participants:
-				ICharacterDriver charDriver = playerDriver.gameStarted( game, game.getCharacters().get( gameCharacter ));
+				ICharacterDriver charDriver = playerDriver.gameStarted( game, pid );
 				
 				/////////////////////////////////////////////////////////////////////
 				// this was the last admin message, now real-time protocol starts
 				
 				// swapping to real time protocol:
-				handlers.put( gameCharacter, charDriver );
+				handlers.put( character, charDriver );
 				
 				// updating running games registry:
 				runningGames.put( player, game );
+				
+				pid ++;
 			}
 		}	
 		
@@ -111,11 +114,11 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 		
 		synchronized(runningGames)
 		{
-			for(Character gameCharacter : game.getCharacters().keySet())
+			for(Character character : game.getCharacters())
 			{
-				runningGames.remove( gameCharacter.getPlayer() );
+				runningGames.remove( character.getPlayer() );
 				
-				IPlayerDriver driver = hub.getPlayer( gameCharacter.getPlayer() );
+				IPlayerDriver driver = hub.getPlayer( character.getPlayer() );
 				
 				driver.gameEnded( results );
 				

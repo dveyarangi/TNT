@@ -52,7 +52,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	 * Client messages autoresolve preffix. Used by {@link #inGson} to load
 	 * messages into correct instance of {@link IClientMessage}
 	 */
-	private static final String		MESSAGE_TYPE_PREFIX	= "org.tnt.multiplayer.admin.MC";
+	private static final String		MESSAGE_TYPE_PREFIX	= "org.tnt.multiplayer.hub.MC";
 	private static final String		MESSAGE_TYPE_SUFFIX	= "";
 
 	/**
@@ -134,7 +134,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 		}
 		catch( HubException e )
 		{
-			writeError( e.getMessage() );
+			writeError( e );
 		}
 		finally
 		{
@@ -161,9 +161,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	@Override
 	public void exceptionCaught( ChannelHandlerContext ctx, Throwable cause )
 	{
-		writeError( cause.getMessage() );
-		// TODO: add some grace
-		log.error( cause );
+		writeError( cause );
 		ctx.close();
 	}
 	/**
@@ -171,12 +169,13 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	 * 
 	 * @param message
 	 */
-	private void writeError( String error )
+	private void writeError( Throwable cause )
 	{
 		// serializing message into JSON format:
-		String jsonStr = outGson.toJson( new MSError( error ) );
+		String jsonStr = outGson.toJson( new MSError( cause.getMessage() ) );
 
 		log.trace( "Writing to client [" + player + "] >>> " + jsonStr );
+		log.error( "Error in client communication.", cause );
 
 		// writing
 		channel.writeAndFlush( jsonStr + "\r\n" );

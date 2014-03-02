@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.tnt.account.Character;
-import org.tnt.game.GameType;
 import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.ICharacterAction;
 import org.tnt.multiplayer.IGameResults;
@@ -48,15 +47,17 @@ public class RatsSimulation implements IGameSimulator
 
 	}
 
+
+	@Override
+	public void destroy()
+	{
+	}
+
 	@Override
 	public int getMaxCapacity() { return CHARS_IN_RACE; }
 	
 	@Override
 	public IGameResults isOver() { return results; }
-
-	@Override
-	public GameType getType() {	return GameType.RAT_RACE; }
-
 
 	@Override
 	public void addCharacterAction( int pid, ICharacterAction action )

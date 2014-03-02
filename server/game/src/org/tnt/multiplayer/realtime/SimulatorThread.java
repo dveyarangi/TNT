@@ -9,6 +9,11 @@ import org.tnt.multiplayer.MultiplayerGame;
 
 import com.spinn3r.log5j.Logger;
 
+/**
+ * This thread advances server-side game simulator
+ * @author fimar
+ *
+ */
 public class SimulatorThread implements Runnable
 {
 	////////////////////////////////////////////////////////////
@@ -45,22 +50,27 @@ public class SimulatorThread implements Runnable
 	@Override
 	public void run()
 	{
-		simulator.init();
-		
 		
 		TIntObjectHashMap <IGameUpdate> updatesBuffer = new TIntObjectHashMap <> ();
 		
 		long updateTime = startTime = System.nanoTime();
 		long now;
+		long stepTime;
 		
 		IGameResults results = null;
+		
+		simulator.init();
+		
+		isAlive = true;
 		
 		while( isAlive )
 		{
 			// testing game end condition:
 			results = simulator.isOver();
 			if(results != null)
+			{
 				break;
+			}
 			
 			// registering step start time:
 			now = System.nanoTime();
@@ -68,16 +78,19 @@ public class SimulatorThread implements Runnable
 			if(!isPaused)
 			{
 				
-				time += (now - updateTime);
+				stepTime = now - updateTime;
+				time += stepTime;
 
 				// advancing game and getting updates
-				simulator.step( time, updatesBuffer );
+				simulator.step( stepTime, updatesBuffer );
 				
 				// dispatching updates
 				// TODO: should be a separate controllable frequency
 				// TODO: this copying is unnecessary
 				for(int pid : updatesBuffer.keys())
+				{
 					multiplayer.addUpdate( pid, updatesBuffer.get( pid ) );
+				}
 			}
 			
 			updateTime = now; 
@@ -92,9 +105,16 @@ public class SimulatorThread implements Runnable
 			}
 		}
 		
+		// disband the simulator:
+		simulator.destroy();
+		
+		isAlive = false;
+		
+		// reporting results:
 		if(results == null)
+		{
 			log.error( "Game failed to finish property." );
-		else
+		} else
 		{
 			log.trace( "Game [" + multiplayer + "] finished in " + (startTime - System.currentTimeMillis()) + " ms.");
 			multiplayer.gameOver( results );
@@ -105,9 +125,12 @@ public class SimulatorThread implements Runnable
 	{ 
 		this.isPaused = !this.isPaused;
 		if(isPaused)
+		{
 			log.debug( "Game simulator is paused." );
-		else
+		} else
+		{
 			log.debug( "Game simulator is unpaused." );
+		}
 	}
 	
 	public boolean isPaused() { return isPaused; }

@@ -5,10 +5,11 @@ package org.tnt.multiplayer;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
 import org.tnt.account.Character;
@@ -18,9 +19,6 @@ import org.tnt.multiplayer.realtime.IMultiplayerGameListener;
 import org.tnt.multiplayer.realtime.IngameDispatcherThread;
 import org.tnt.multiplayer.realtime.SimulatorThread;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.spinn3r.log5j.Logger;
 
 
@@ -64,14 +62,14 @@ public class MultiplayerGame
 	/**
 	 * Participating characters and their corresponding short ids.
 	 */
-	private final Map <Character, Integer> characters = new HashMap <> ();
+	private final List <Character> characters = new LinkedList <> ();
 	
 	/**
 	 * Characters mapped to ingame communication protocol handlers.
 	 */
 	private Map <Character, ICharacterDriver> drivers;
 	
-	private Queue actions = new ConcurrentLinkedList ;
+	private Queue <ICharacterAction> actions = new ConcurrentLinkedQueue <ICharacterAction> ();
 
 	/**
 	 * Game lifecycle listener
@@ -90,13 +88,7 @@ public class MultiplayerGame
 		this.simulator = plugin.createSimulation( room.getCharacters() );
 
 		// register characters and ids:
-		int idx = 0;
-		for(Character character : room.getCharacters())
-		{
-			characters.put( character, idx );
-			
-			idx ++;
-		}
+
 		
 	}
 	
@@ -167,7 +159,7 @@ public class MultiplayerGame
 		}
 	}
 	
-	public Map <Character, Integer> getCharacters() { return characters; }
+	public List <Character> getCharacters() { return characters; }
 
 	public void gameOver( IGameResults results )
 	{
@@ -201,11 +193,12 @@ public class MultiplayerGame
 			// checking if all clients have acknowledged the game start:
 			if(updates.size() == characters.size())
 			{
-				for(Character character : characters.keySet())
+				int cpid = 0;
+				for(Character character : characters)
 				{
 					ICharacterDriver driver = drivers.get( character );
-					int cpid = characters.get( character );
 					driver.setStarted( updates.get( cpid ).poll() );
+					cpid ++;
 				}
 				
 				simulatorThread.togglePause();

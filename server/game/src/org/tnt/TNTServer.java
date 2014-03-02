@@ -15,6 +15,8 @@ import io.netty.handler.codec.string.StringEncoder;
 import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
+import org.tnt.game.GameFactory;
+import org.tnt.game.rats.RatsPlugin;
 import org.tnt.multiplayer.Hub;
 import org.tnt.multiplayer.auth.AuthHandler;
 
@@ -52,6 +54,8 @@ public class TNTServer
 		
 		// multiplayer hub:
 		this.hub = new Hub();
+		
+		GameFactory.registerPlugin( new RatsPlugin() );
 		
 		// authentication handler appendix:
 		this.channelInitializer = new ChannelInitializer<SocketChannel>() {
