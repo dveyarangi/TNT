@@ -15,20 +15,20 @@ import io.netty.handler.codec.string.StringEncoder;
 import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
-import org.tnt.multiplayer.MultiplayerHub;
+import org.tnt.multiplayer.Hub;
 import org.tnt.multiplayer.auth.AuthHandler;
 
 import com.spinn3r.log5j.Logger;
 
 public class TNTServer 
 {
-	private Logger log = Logger.getLogger(this.getClass());
+	private final Logger log = Logger.getLogger(this.getClass());
 
 	private ServerConfig	config;
 	
 	private PlayerStore store;
 	
-	private MultiplayerHub orchestrator;
+	private Hub hub;
 	
 	private ChannelInitializer <SocketChannel> channelInitializer; 
 	public static final DelimiterBasedFrameDecoder FRAME_DECODER = new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() );
@@ -51,11 +51,11 @@ public class TNTServer
 		this.store = new PlayerStore();
 		
 		// multiplayer hub:
-		this.orchestrator = new MultiplayerHub(store);
+		this.hub = new Hub();
 		
 		// authentication handler appendix:
 		this.channelInitializer = new ChannelInitializer<SocketChannel>() {
-			private AuthHandler handler = new AuthHandler( store, orchestrator );
+			private final AuthHandler handler = new AuthHandler( store, hub );
 			@Override public void initChannel( SocketChannel ch ) throws Exception
 			{
 				ch.pipeline().addLast( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ));

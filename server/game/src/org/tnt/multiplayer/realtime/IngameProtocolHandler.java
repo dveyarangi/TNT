@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import org.tnt.multiplayer.ICharacterAction;
+import org.tnt.multiplayer.ICharacterDriver;
 import org.tnt.multiplayer.IGameUpdate;
 import org.tnt.multiplayer.MultiplayerGame;
 
@@ -15,7 +16,7 @@ import org.tnt.multiplayer.MultiplayerGame;
  * @author fimar
  *
  */
-public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter 
+public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter implements ICharacterDriver
 {
 	/**
 	 * Handler's name for comm channel pipeline.
@@ -25,12 +26,12 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Multiplayer game this handler serves.
 	 */
-	private MultiplayerGame multiplayer;
+	private final MultiplayerGame multiplayer;
 	
 	/** 
 	 * Character short id (determined by character join order to the game room).
 	 */
-	private int pid;
+	private final int pid;
 	
 	/**
 	 * Defines ingame protocol states
@@ -45,12 +46,12 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Client communication channel.
 	 */
-	private Channel channel;
+	private final Channel channel;
 	
 	/**
 	 * Outgoint messages buffer.
 	 */
-	private ByteBuf outBuffer;
+	private final ByteBuf outBuffer;
 	
 	public IngameProtocolHandler(Channel channel, MultiplayerGame multiplayer, int pid)
 	{
@@ -90,6 +91,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
     	   	break;
 
     	case RUNNING:	
+    		// TODO: decouple simulator and network threads?
     		multiplayer.addCharacterAction( pid, parseClientUpdate( buffer ) );
     		break;
     	case OVER:
@@ -103,10 +105,11 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
      * 
      * @param update
      */
+	@Override
 	public void setStarted( IGameUpdate update) 
     {
     	state = GameState.RUNNING;
-    	write( update );
+    	update( update );
     }
 
 	/**
@@ -120,7 +123,9 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
      * Sends the provided game update to the client. 
      * @param update
      */
-	public void write( IGameUpdate update )
+
+	@Override
+	public void update( IGameUpdate update )
 	{
 		// resetting output buffer:
 		outBuffer.clear();
@@ -136,6 +141,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 		channel.writeAndFlush( outBuffer );
 	}
 
+	@Override
 	public void stop()
 	{
 		// TODO Switch back to admin

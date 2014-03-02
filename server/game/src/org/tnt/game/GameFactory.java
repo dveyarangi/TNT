@@ -1,40 +1,19 @@
 package org.tnt.game;
 
-import io.netty.channel.Channel;
-
-import org.tnt.game.rats.RatsHandler;
-import org.tnt.game.rats.RatsSimulation;
-import org.tnt.multiplayer.MultiplayerGame;
-import org.tnt.multiplayer.realtime.IngameProtocolHandler;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameFactory
 {
-	public IGameSimulator getSimulation(GameType type)
-	{
-		if(type == null)
-			throw new IllegalArgumentException("Game type cannot be null");
-		
-		switch(type)
-		{
-		case RAT_RACE:
-			return new RatsSimulation();
-		}
-		
-		throw new IllegalArgumentException("Unknown game type " + type);
-	}
+	private static final Map <String, IGamePlugin> games = new HashMap <String, IGamePlugin> ();
 	
-	public IngameProtocolHandler getIngameHandler(Channel channel, MultiplayerGame game, int pid)
+	public static void registerPlugin(IGamePlugin plugin)
 	{
-		GameType type = game.getType();
-		if(type == null)
-			throw new IllegalArgumentException("Game type cannot be null");
-		
-		switch(type)
-		{
-		case RAT_RACE:
-			return new RatsHandler(channel, game, pid);
-		}
-		
-		throw new IllegalArgumentException("Unknown game type " + type);
+		games.put( plugin.getName(), plugin );
+	}
+
+	public static IGamePlugin getPlugin( String type )
+	{
+		return games.get( type );
 	}
 }

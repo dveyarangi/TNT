@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.admin;
+package org.tnt.multiplayer.hub;
 
 /**
  * This message is sent by server to inform clients that the game is ready and is going to be started.

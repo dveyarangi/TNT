@@ -7,10 +7,10 @@ import org.tnt.multiplayer.ICharacterAction;
 import org.tnt.multiplayer.MultiplayerGame;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 
-public class RatsHandler extends IngameProtocolHandler
+public class RatsProtocolHandler extends IngameProtocolHandler
 {
 
-	public RatsHandler( Channel channel, MultiplayerGame multiplayer, int pid )
+	public RatsProtocolHandler( Channel channel, MultiplayerGame multiplayer, int pid )
 	{
 		super( channel, multiplayer, pid );
 	}
@@ -27,5 +27,6 @@ public class RatsHandler extends IngameProtocolHandler
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 
 }

@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.admin;
+package org.tnt.multiplayer.hub;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -10,7 +10,7 @@ import io.netty.util.ReferenceCountUtil;
 import java.nio.charset.Charset;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.MultiplayerHub;
+import org.tnt.multiplayer.Hub;
 import org.tnt.util.AbstractElementAdapter;
 
 import com.google.gson.Gson;
@@ -23,9 +23,9 @@ import com.spinn3r.log5j.Logger;
  * 
  * @author fimar
  */
-public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
+public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 {
-	private final static Logger		log				= Logger.getLogger( AdminProtocolHandler.class );
+	private final static Logger		log				= Logger.getLogger( HubProtocolHandler.class );
 
 	/**
 	 * Handler name in netty pipeline
@@ -35,38 +35,40 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Multiplayer service
 	 */
-	private final MultiplayerHub	orchestrator;
+	private final Hub	hub;
 
 	/**
 	 * Json encoder/decoder
 	 */
-	private Gson					inGson, outGson;
+	private final Gson					inGson, outGson;
 
 	/**
 	 * Json string encoding
 	 */
 	private static final Charset	ENCODING		= CharsetUtil.UTF_8;
 
+	private static final String		MESSAGE_TYPE_NAME	= "type";
 	/**
 	 * Client messages autoresolve preffix. Used by {@link #inGson} to load
 	 * messages into correct instance of {@link IClientMessage}
 	 */
-	private static final String		MESSAGE_PREFIX	= "org.tnt.multiplayer.admin.MC";
+	private static final String		MESSAGE_TYPE_PREFIX	= "org.tnt.multiplayer.admin.MC";
+	private static final String		MESSAGE_TYPE_SUFFIX	= "";
 
 	/**
 	 * Player that is managed by this handler.
 	 */
-	private Player					player;
+	private final Player					player;
 
 	/**
 	 * Network channel this handler manages.
 	 */
-	private Channel					channel;
+	private final Channel					channel;
 
-	public AdminProtocolHandler( Channel channel, final MultiplayerHub orchestrator, Player player )
+	public HubProtocolHandler( Channel channel, final Hub hub, Player player )
 	{
 
-		this.orchestrator = orchestrator;
+		this.hub = hub;
 
 		this.channel = channel;
 
@@ -76,7 +78,7 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 		// loading concrete
 		// instances of IClientMessage
 		this.inGson = new GsonBuilder().registerTypeAdapter( IClientMessage.class,
-				new AbstractElementAdapter<IClientMessage>( MESSAGE_PREFIX ) ).create();
+				new AbstractElementAdapter<IClientMessage>( MESSAGE_TYPE_NAME, MESSAGE_TYPE_PREFIX, MESSAGE_TYPE_SUFFIX ) ).create();
 
 		// outbound messages are parsed by default gson parser
 		this.outGson = new GsonBuilder().create();
@@ -92,7 +94,7 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 	public void channelInactive( ChannelHandlerContext ctx ) throws Exception
 	{
 		// dropping player from the orchestrator:
-		orchestrator.unregisterPlayerHandler( player );
+		hub.unregisterPlayerHandler( player );
 	}
 
 	/**
@@ -121,14 +123,18 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 			if( message instanceof MCQuit )
 			{ // game quit message is sent when player decides to leave game
 				// lobby or cancel matchfinding
-				orchestrator.removeFromGame( player );
+				hub.removeFromGame( player );
 			}
 			else
 			{
 				// executing message logic:
-				message.process( player, orchestrator );
+				message.process( player, hub );
 			}
 
+		}
+		catch( HubException e )
+		{
+			writeError( e.getMessage() );
 		}
 		finally
 		{
@@ -146,7 +152,7 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 		// serializing message into JSON format:
 		String jsonStr = outGson.toJson( message );
 
-		log.trace( "Writing to client " + player + " >>> " + jsonStr );
+		log.trace( "Writing to client [" + player + "] >>> " + jsonStr );
 
 		// writing
 		channel.writeAndFlush( jsonStr + "\r\n" );
@@ -155,9 +161,25 @@ public class AdminProtocolHandler extends ChannelInboundHandlerAdapter
 	@Override
 	public void exceptionCaught( ChannelHandlerContext ctx, Throwable cause )
 	{
+		writeError( cause.getMessage() );
 		// TODO: add some grace
-		cause.printStackTrace();
+		log.error( cause );
 		ctx.close();
+	}
+	/**
+	 * Writes server message to the client.
+	 * 
+	 * @param message
+	 */
+	private void writeError( String error )
+	{
+		// serializing message into JSON format:
+		String jsonStr = outGson.toJson( new MSError( error ) );
+
+		log.trace( "Writing to client [" + player + "] >>> " + jsonStr );
+
+		// writing
+		channel.writeAndFlush( jsonStr + "\r\n" );
 	}
 
 }

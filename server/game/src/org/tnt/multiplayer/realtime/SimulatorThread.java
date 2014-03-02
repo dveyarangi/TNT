@@ -1,10 +1,11 @@
-package org.tnt.multiplayer;
+package org.tnt.multiplayer.realtime;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-import java.util.List;
-
 import org.tnt.game.IGameSimulator;
+import org.tnt.multiplayer.IGameResults;
+import org.tnt.multiplayer.IGameUpdate;
+import org.tnt.multiplayer.MultiplayerGame;
 
 import com.spinn3r.log5j.Logger;
 
@@ -18,9 +19,9 @@ public class SimulatorThread implements Runnable
 	private long startTime;
 	private long time;
 	
-	private IGameSimulator simulator;
+	private final IGameSimulator simulator;
 	
-	private MultiplayerGame multiplayer;
+	private final MultiplayerGame multiplayer;
 	
 	////////////////////////////////////////////////////////////
 	
@@ -52,8 +53,16 @@ public class SimulatorThread implements Runnable
 		long updateTime = startTime = System.nanoTime();
 		long now;
 		
-		while(isAlive && !simulator.isOver())
+		IGameResults results = null;
+		
+		while( isAlive )
 		{
+			// testing game end condition:
+			results = simulator.isOver();
+			if(results != null)
+				break;
+			
+			// registering step start time:
 			now = System.nanoTime();
 			
 			if(!isPaused)
@@ -83,7 +92,13 @@ public class SimulatorThread implements Runnable
 			}
 		}
 		
-		multiplayer.gameOver();
+		if(results == null)
+			log.error( "Game failed to finish property." );
+		else
+		{
+			log.trace( "Game [" + multiplayer + "] finished in " + (startTime - System.currentTimeMillis()) + " ms.");
+			multiplayer.gameOver( results );
+		}
 	}
 	
 	public void togglePause() 
@@ -99,6 +114,7 @@ public class SimulatorThread implements Runnable
 
 	public void safeStop() { this.isAlive = false; }
 	
+	@Override
 	public String toString() { return "simulator-" + multiplayer.toString(); }
 
 	public IGameSimulator getSimulator() { return simulator; }

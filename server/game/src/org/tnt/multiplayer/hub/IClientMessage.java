@@ -1,7 +1,7 @@
-package org.tnt.multiplayer.admin;
+package org.tnt.multiplayer.hub;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.MultiplayerHub;
+import org.tnt.multiplayer.Hub;
 
 /**
  * Abstract client message.
@@ -17,7 +17,7 @@ public abstract class IClientMessage
 	 * Message type as it should be specified in JSON
 	 * Auto-detecting message concrete instance type name:
 	 */
-	private String type = this.getClass().getSimpleName().substring( 2 );
+	private final String type = this.getClass().getSimpleName().substring( 2 );
 
 	/**
 	 * Executes player management logic associated with this message.
@@ -25,8 +25,8 @@ public abstract class IClientMessage
 	 * @param player
 	 * @param orchestrator
 	 */
-	abstract void process( Player player, MultiplayerHub orchestrator );
-	
+	abstract void process( Player player, Hub orchestrator ) throws HubException;
+
 	
 	@Override
 	public String toString() { return "ADMMSG: " + type; }

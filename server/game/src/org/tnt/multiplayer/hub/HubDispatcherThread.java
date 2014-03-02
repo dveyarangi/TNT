@@ -1,32 +1,32 @@
 /**
  * 
  */
-package org.tnt.multiplayer;
+package org.tnt.multiplayer.hub;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.tnt.multiplayer.admin.IServerMessage;
+import org.tnt.multiplayer.Hub;
 
 import com.spinn3r.log5j.Logger;
 
 /**
  * @author fimar
- *
+ * TODO: use or throw
  */
-public class AdminDispatcherThread implements Runnable
+public class HubDispatcherThread implements Runnable
 {
 	private volatile boolean isAlive = false;
 	
-	private MultiplayerHub orchestrator;
+	private final Hub orchestrator;
 	
 	private volatile Queue <IServerMessage> messageQueue = new LinkedList <IServerMessage> ();
 	
 	private static final long HEARTBEAT = 1000;
 	
-	private Logger log = Logger.getLogger( this.getClass() );
+	private final Logger log = Logger.getLogger( this.getClass() );
 	
-	public AdminDispatcherThread(MultiplayerHub orchestrator)
+	public HubDispatcherThread(Hub orchestrator)
 	{
 		this.orchestrator = orchestrator;
 	}
