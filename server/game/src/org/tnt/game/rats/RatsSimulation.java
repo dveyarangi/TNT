@@ -3,13 +3,12 @@ package org.tnt.game.rats;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.tnt.account.Character;
-import org.tnt.game.GameType;
 import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.ICharacterAction;
+import org.tnt.multiplayer.IGameResults;
 import org.tnt.multiplayer.IGameUpdate;
 
 public class RatsSimulation implements IGameSimulator
@@ -17,15 +16,13 @@ public class RatsSimulation implements IGameSimulator
 	
 	private static final int CHARS_IN_RACE = 2;
 	
-	private List <Character> characters = new ArrayList<Character> ();
+	private final List <Character> characters = new ArrayList<Character> ();
 	
-	private boolean isOver = true;
+	private final IGameResults results = null;
 	
 	private int time = 0;
 	
-
-	@Override
-	public void setCharacters( List <Character> characters )
+	public RatsSimulation( List <Character> characters )
 	{
 		this.characters.addAll( characters );
 	}
@@ -34,7 +31,6 @@ public class RatsSimulation implements IGameSimulator
 	@Override
 	public void init()
 	{
-		isOver = false;
 	}
 
 	@Override
@@ -51,15 +47,17 @@ public class RatsSimulation implements IGameSimulator
 
 	}
 
+
+	@Override
+	public void destroy()
+	{
+	}
+
 	@Override
 	public int getMaxCapacity() { return CHARS_IN_RACE; }
 	
 	@Override
-	public boolean isOver() { return isOver; }
-
-	@Override
-	public GameType getType() {	return GameType.RAT_RACE; }
-
+	public IGameResults isOver() { return results; }
 
 	@Override
 	public void addCharacterAction( int pid, ICharacterAction action )

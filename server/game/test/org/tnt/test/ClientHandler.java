@@ -7,11 +7,11 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
-import org.tnt.game.GameType;
-import org.tnt.multiplayer.admin.MCGameRequest;
-import org.tnt.multiplayer.admin.MSGameDetails;
-import org.tnt.multiplayer.admin.MSGo;
+import org.tnt.game.rats.RatsPlugin;
 import org.tnt.multiplayer.auth.MSAuthResult;
+import org.tnt.multiplayer.hub.MCGameRequest;
+import org.tnt.multiplayer.hub.MSGameDetails;
+import org.tnt.multiplayer.hub.MSGo;
 import org.tnt.multiplayer.realtime.GoPacket;
 
 import com.google.gson.Gson;
@@ -20,9 +20,9 @@ import com.spinn3r.log5j.Logger;
 public class ClientHandler extends ChannelInboundHandlerAdapter
 {
 	
-	private Logger log = Logger.getLogger(this.getClass());
+	private final Logger log = Logger.getLogger(this.getClass());
 	
-	private Gson gson = new Gson();
+	private final Gson gson = new Gson();
 
 	
 	private enum ClientState {
@@ -31,9 +31,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
 	
 	ClientState state = ClientState.STARTED;
 
-	private int	playerId;
+	private final int	playerId;
 
-	private int	charId;
+	private final int	charId;
 	
 	private MSGameDetails gameDetails;
 	
@@ -111,7 +111,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter
 
 	private void doRequestGame( ChannelHandlerContext ctx )
 	{
-		MCGameRequest request = new MCGameRequest( GameType.RAT_RACE, charId );
+		MCGameRequest request = new MCGameRequest( RatsPlugin.NAME, charId );
 		
 		String jsonStr = gson.toJson( request );
 		log.debug( "Sending game request:" + jsonStr );

@@ -5,17 +5,19 @@ package org.tnt.multiplayer;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
 import org.tnt.account.Character;
-import org.tnt.game.GameFactory;
-import org.tnt.game.GameType;
+import org.tnt.game.IGamePlugin;
 import org.tnt.game.IGameSimulator;
-import org.tnt.multiplayer.realtime.IngameProtocolHandler;
+import org.tnt.multiplayer.realtime.IMultiplayerGameListener;
+import org.tnt.multiplayer.realtime.IngameDispatcherThread;
+import org.tnt.multiplayer.realtime.SimulatorThread;
 
 import com.spinn3r.log5j.Logger;
 
@@ -27,22 +29,24 @@ import com.spinn3r.log5j.Logger;
  */
 public class MultiplayerGame
 {
-	private Logger log = Logger.getLogger( MultiplayerGame.class );
-
-	/**
-	 * Multiplayer hub
-	 */
-	private MultiplayerHub hub;
+	private final Logger log = Logger.getLogger( MultiplayerGame.class );
 	
+	private final String gameId;
+	
+	/**
+	 * Specific game type factory:
+	 */
+	private final IGamePlugin plugin;
+
 	/**
 	 * Maps short ingame ids to queue of updates to be sent to the client.
 	 */
-	private TIntObjectHashMap<Queue <IGameUpdate>> updates;
+	private final TIntObjectHashMap<Queue <IGameUpdate>> updates;
 	
 	/**
 	 * Game simulator, encapsulates game logic and generates updates for game clients.
 	 */
-	private IGameSimulator simulator;
+	private final IGameSimulator simulator;
 	
 	/**
 	 * Simulator thread, executes the simulator step by step
@@ -58,39 +62,37 @@ public class MultiplayerGame
 	/**
 	 * Participating characters and their corresponding short ids.
 	 */
-	private Map <Character, Integer> characters = new HashMap <> ();
+	private final List <Character> characters = new LinkedList <> ();
 	
 	/**
 	 * Characters mapped to ingame communication protocol handlers.
 	 */
-	private Map <Character, IngameProtocolHandler> handlers;
+	private Map <Character, ICharacterDriver> drivers;
+	
+	private Queue <ICharacterAction> actions = new ConcurrentLinkedQueue <ICharacterAction> ();
 
-	MultiplayerGame(MultiplayerHub hub, GameFactory gameFactory, GameRoom room)
+	/**
+	 * Game lifecycle listener
+	 */	
+	private IMultiplayerGameListener	listener;
+
+	public MultiplayerGame(GameRoom room)
 	{
-		this.hub = hub;
+		this.gameId = room.getGameId();
+		
+		this.plugin = room.getPlugin();
 		
 		this.updates = new TIntObjectHashMap <> ();
 		
 		// create game simulator
-		this.simulator = gameFactory.getSimulation( room.getType() );
+		this.simulator = plugin.createSimulation( room.getCharacters() );
 
 		// register characters and ids:
-		int idx = 0;
-		for(Character character : room.getCharacters())
-		{
-			characters.put( character, idx );
-			
-			idx ++;
-		}
+
 		
-		simulator.setCharacters( room.getCharacters() );
-		
-		
-		this.handlers = new HashMap <Character, IngameProtocolHandler> ();
 	}
 	
-
-	public GameType getType() { return simulator.getType();	}
+	public String getId() { return gameId; }
 
 	/**
 	 * Start the game threads
@@ -98,14 +100,14 @@ public class MultiplayerGame
 	 * @param threadPool
 	 * @param handlers
 	 */
-	void start(ExecutorService threadPool, Map <Character, IngameProtocolHandler> handlers)
+	void start(ExecutorService threadPool, Map <Character, ICharacterDriver> drivers)
 	{
 		this.simulatorThread  = new SimulatorThread( this, simulator );
 		threadPool.submit( simulatorThread );
 		
-		this.handlers = handlers;
+		this.drivers = drivers;
 		
-		this.dispatcherThread = new IngameDispatcherThread( this, handlers );
+		this.dispatcherThread = new IngameDispatcherThread( this, drivers );
 
 		
 		threadPool.submit( dispatcherThread );
@@ -151,17 +153,17 @@ public class MultiplayerGame
 	public void stop()
 	{
 		simulatorThread.safeStop();
-		for(IngameProtocolHandler handler : handlers.values())
+		for(ICharacterDriver driver : drivers.values())
 		{
-			handler.stop();
+			driver.stop();
 		}
 	}
 	
-	public Map <Character, Integer> getCharacters() { return characters; }
+	public List <Character> getCharacters() { return characters; }
 
-	public void gameOver()
+	public void gameOver( IGameResults results )
 	{
-		hub.gameOver( this );
+		listener.gameOver( this, results );
 	}
 
 	/**
@@ -191,11 +193,12 @@ public class MultiplayerGame
 			// checking if all clients have acknowledged the game start:
 			if(updates.size() == characters.size())
 			{
-				for(Character character : characters.keySet())
+				int cpid = 0;
+				for(Character character : characters)
 				{
-					IngameProtocolHandler handler = handlers.get( character );
-					int cpid = characters.get( character );
-					handler.setStarted( updates.get( cpid ).poll() );
+					ICharacterDriver driver = drivers.get( character );
+					driver.setStarted( updates.get( cpid ).poll() );
+					cpid ++;
 				}
 				
 				simulatorThread.togglePause();
@@ -216,5 +219,8 @@ public class MultiplayerGame
 		simulator.addCharacterAction( pid, action );
 	}
 
+	public IGamePlugin getPlugin() { return plugin; }
+
+	void setListener( IMultiplayerGameListener listener ) {this.listener = listener; } 
 
 }

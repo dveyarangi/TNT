@@ -14,8 +14,8 @@ import java.nio.charset.Charset;
 
 import org.tnt.account.Player;
 import org.tnt.account.PlayerStore;
-import org.tnt.multiplayer.GameProtocolHandler;
-import org.tnt.multiplayer.MultiplayerHub;
+import org.tnt.multiplayer.PlayerHubDriver;
+import org.tnt.multiplayer.Hub;
 
 import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;
@@ -26,7 +26,7 @@ import com.spinn3r.log5j.Logger;
  * This handler is the only handler for a new client connection.
  * 
  * It authenticates the player (TODO) and if the auth is successful, this handler replaces itself with
- * {@link GameProtocolHandler} to manage the rest of the protocol.
+ * {@link PlayerHubDriver} to manage the rest of the game client communications.
  * 
  * @author fimar
  */
@@ -38,7 +38,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Multiplayer hub
 	 */
-	private final MultiplayerHub hub;
+	private final Hub hub;
 	
 	/**
 	 * Player store
@@ -53,9 +53,9 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 	 */
 	public static final String	NAME	= "auth";
 	
-	private Gson gson;
+	private final Gson gson;
 	
-	public AuthHandler(PlayerStore store, MultiplayerHub hub)
+	public AuthHandler(PlayerStore store, Hub hub)
 	{
 		this.store = store;
 		
@@ -88,15 +88,14 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     		MCAuth message = gson.fromJson( messageStr, MCAuth.class );
     		
     		// TODO: actual authentication!
-    		credentials = store.getPlayer( message.getPlayerId() );
+    		credentials = doAuthenticate( message );
         	if(credentials == null)
     		{
         		log.warn( "Auth failed: unknown player (id " + message.getPlayerId() + ")");
         		writeAuthResult( ctx, MSAuthResult.FAILED_UNKNOWN_PLAYER );
     			return;
     		}
-    		
-    	}
+       	}
     	catch(Exception e)
     	{
        		log.warn( "Auth failed", e);
@@ -113,7 +112,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     	// adding game handler with credentials info:
       	
    	
-    	GameProtocolHandler handler = new GameProtocolHandler( ctx.channel(), ctx.pipeline(), credentials, hub );
+    	PlayerHubDriver handler = new PlayerHubDriver( ctx.channel(), ctx.pipeline(), credentials, hub );
      	
     	if(!hub.registerPlayerHandler( credentials, handler ))
     	{
@@ -132,7 +131,14 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 
     }
     
-    /**
+    private Player doAuthenticate( MCAuth message )
+	{
+    	Player credentials = store.getPlayer( message.getPlayerId() );
+   	
+    	return credentials;
+	}
+
+	/**
      * Writes and flushes authentication outcome to the client.
      * 
      * @param ctx
@@ -141,6 +147,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     private void writeAuthResult(ChannelHandlerContext ctx, MSAuthResult result)
     {
 		ctx.writeAndFlush( gson.toJson( result ) + "\r\n" );
+		if(! result.isOk()) // terminating failed auth connection
+			ctx.close();
     }
 
 }

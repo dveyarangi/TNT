@@ -1,9 +1,10 @@
-package org.tnt.multiplayer.admin;
+package org.tnt.multiplayer.hub;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import org.tnt.account.Character;
+import org.tnt.multiplayer.GameRoom;
 
 /**
  * This message is sent by server to inform client about his game room.
@@ -14,10 +15,15 @@ import org.tnt.account.Character;
 @SuppressWarnings( "unused" )
 public class MSGameDetails implements IServerMessage
 {
+	/** 
+	 * Game id
+	 */
+	final String id;
+	
 	/**
 	 * List of participating players and their ingame details
 	 */
-	private List <PlayerDetails> players;
+	final List <PlayerDetails> players;
 
 	/**
 	 * Player's game participation aspect
@@ -37,12 +43,15 @@ public class MSGameDetails implements IServerMessage
 	 * Creates a new game details message from list of participating characters. 
 	 * Each character receives a short room id according to his ordinal in this list.
 	 */
-	public MSGameDetails( List<Character> list)
+	public MSGameDetails( GameRoom room)
 	{
+		this.id = room.getGameId();
+		
 		this.players = new LinkedList <> ();
 		
+		
 		int idx = 0;
-		for( Character character : list )
+		for( Character character : room.getCharacters() )
 		{
 			PlayerDetails playerDetails = new PlayerDetails();
 			playerDetails.playerId = character.getPlayer().getId();
