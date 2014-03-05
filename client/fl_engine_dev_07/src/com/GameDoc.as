@@ -1,6 +1,7 @@
 package com 
 {
 	import com.background.BackgroundHolder;
+	import com.background.ObsrtaclesHolder;
 	import com.character.SimpleRat;
 	import com.events.GameEvent;
 	import com.events.UiEvent;
@@ -17,7 +18,7 @@ package com
 	public class GameDoc extends MovieClip 
 	{
 		///////////////////////////////////////////////////////////////// hardcoded settings. WILL BE CHANGED BY DIMANIC
-		public var distance:uint = 300; /// Distance to run (Meter)
+		public var distance:uint = 800; /// Distance to run (Meter)
 		public var topSpeed:Number = 64; /// Character top speed (M/s)
 		public var minSpeed:Number = 10; /// Character minimum speed (M/s)
 		public var acseleration:Number = 0.014; /// Character acselerattion (+M/s)
@@ -25,12 +26,15 @@ package com
 		public var charAction:Object =  null; /// Character Action
 		public var actions:Array; /// Hollds avaible Cahracter Actions
 		
+		public var god:Boolean = false; /// true during jumps
+		
 				
 		public var finalPlayerTime:Number = 0; // HOLDS TIME OF PLAYER
 
 		/////////////////////////////////////////////////////////////////
 
 		public var backHolder:BackgroundHolder;
+		public var obstraclesHolder:ObsrtaclesHolder;
 		public var interfaceHolder:InterfaceHolder;
 		public var engine:GameEngine;
 		public var rat:SimpleRat;

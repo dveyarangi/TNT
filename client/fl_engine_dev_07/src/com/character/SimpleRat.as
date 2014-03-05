@@ -3,6 +3,7 @@ package com.character
 	import com.events.CharacterEvent;
 	import com.events.GameEvent;
 	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
@@ -25,6 +26,8 @@ package com.character
 		
 		private var speedTimer:Timer = new Timer(500);
 		private var actionTimer:Timer;
+		
+		public var hit:Sprite;
 		
 		public function SimpleRat()
 		{
@@ -55,6 +58,10 @@ package com.character
 			actionTimer = new Timer (time, 1);
 			actionTimer.addEventListener (TimerEvent.TIMER_COMPLETE, endAction);
 			actionTimer.start();
+			if (MovieClip(root).charAction.type == "jump")
+			{
+				MovieClip(root).god = true;
+			}
 		}
 		
 		private function endAction(e:TimerEvent):void 
@@ -63,6 +70,7 @@ package com.character
 			actionTimer.removeEventListener (TimerEvent.TIMER_COMPLETE, endAction);
 			actionTimer.stop();
 			MovieClip(root).charAction = null;
+			MovieClip(root).god = false;
 			checkSpeed();
 			
 		}

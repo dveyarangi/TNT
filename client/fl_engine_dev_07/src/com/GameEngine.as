@@ -22,7 +22,7 @@ package com
 		public var currentTime:Number = 0; /// Current Time of the Player
 		
 		private var updateGameTimer:Timer = new Timer(UPDATE_GAME_TIME);
-		private var updateDisplayTimer:Timer = new Timer(100);
+		private var updateDisplayTimer:Timer = new Timer(300);
 
 		
 		private var go:Boolean = false;
@@ -58,6 +58,7 @@ package com
 			{
 				trace("Engine: start runnining!!!!");
 				MovieClip(root).charState = "acelerate";
+				stage.addEventListener (GameEvent.PLAYER_HIT_OBS, onPlayerHitsObject)
 				stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
 				startGameUpdate();
 			}
@@ -69,6 +70,8 @@ package com
 			}
 		
 		}
+		
+		
 		
 		private function updateGame(e:TimerEvent):void
 		{
@@ -102,9 +105,6 @@ package com
 						stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
 					}
 					break;
-				
-				case "run": 
-					break;
 
 			}
 
@@ -129,6 +129,7 @@ package com
 				if (finish && currentSpeed <= 0)
 				{
 					stopGameUpdate();
+					stage.removeEventListener (GameEvent.PLAYER_HIT_OBS, onPlayerHitsObject)
 					stage.dispatchEvent(new GameEvent(GameEvent.END));
 					MovieClip(root).charState = "wait";
 					stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
@@ -141,6 +142,13 @@ package com
 		{
 			currentTime += (UPDATE_GAME_TIME / 100);
 			stage.dispatchEvent(new UiEvent(UiEvent.UPDATE_UI));
+		}
+		
+		private function onPlayerHitsObject(e:GameEvent):void 
+		{
+			MovieClip(root).acseleration = 10;
+			MovieClip(root).charState = "break";
+			stage.dispatchEvent(new CharacterEvent(CharacterEvent.CHANGE_STATE));
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////////////////// START STOP TIMERS

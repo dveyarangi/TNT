@@ -14,6 +14,7 @@ package com.events
 		public static const PLAYER_START_RUN:String = "playerStartRun"; //Player starts running
 		public static const PLAYER_ACTION_START:String = "playerActionStart"; //Player starts running
 		public static const PLAYER_ACTION_END:String = "playerActionEnd"; //Player starts running
+		public static const PLAYER_HIT_OBS:String = "playerHitObsrtacle"; //Player hit pit or other obsrtacle
 		public static const PLAYER_FINISHED:String = "playerFinished"; //Player end running
 		public static const END:String = "end" //END game
 
