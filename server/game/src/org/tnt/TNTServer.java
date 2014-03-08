@@ -16,7 +16,6 @@ import org.tnt.account.PlayerStore;
 import org.tnt.config.ServerConfig;
 import org.tnt.config.TNTConfig;
 import org.tnt.game.GameFactory;
-import org.tnt.game.rats.RatsPlugin;
 import org.tnt.multiplayer.Hub;
 import org.tnt.multiplayer.auth.AuthHandler;
 
@@ -39,23 +38,24 @@ public class TNTServer
 	
 	public TNTServer(  )
 	{
+		log.info( "Starting server..." );
 
 	}
 	
 	public void init( ServerConfig config )
 	{
-		log.info( "initializing..." );
 		long startTime = System.currentTimeMillis();
 		// server configuration
 		this.config = config;
+		
+		
+		GameFactory.init();
 		
 		// storage of player account, profile and characters
 		this.store = new PlayerStore();
 		
 		// multiplayer hub:
 		this.hub = new Hub();
-		
-		GameFactory.registerPlugin( new RatsPlugin() );
 		
 		// authentication handler appendix:
 		this.channelInitializer = new ChannelInitializer<SocketChannel>() {
@@ -104,13 +104,14 @@ public class TNTServer
 			bootstrap.group().shutdownGracefully();
 		}
 	}
+	
 
 	public static void main( String[] args ) throws Exception
 	{
-		
-		TNTConfig config = TNTConfig.load( args );
 
 		TNTServer server = new TNTServer();
+		
+		TNTConfig config = TNTConfig.load( args );
 		
 		server.init( config.getServerConfig() );
 		

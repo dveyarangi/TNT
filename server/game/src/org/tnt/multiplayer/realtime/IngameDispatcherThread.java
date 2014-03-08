@@ -45,11 +45,9 @@ public class IngameDispatcherThread implements Runnable
 	public void run()
 	{
 		isAlive = true;
-		int pid;
-		
-		Queue <IGameUpdate> updates;
 		while(isAlive)
 		{
+			
 			try
 			{
 				Thread.sleep(HEARTBEAT);
@@ -65,21 +63,28 @@ public class IngameDispatcherThread implements Runnable
 				continue;
 			}
 			
-			pid = 0;
-			for(Character character : multiplayer.getCharacters())
+			flushUpdates();
+			
+			
+		}
+	}
+	
+	private void flushUpdates()
+	{
+		int pid = 0;
+		
+		Queue <IGameUpdate> updates;
+		for(Character character : multiplayer.getCharacters())
+		{
+			updates = multiplayer.getUpdates( pid );
+			
+			for(IGameUpdate update : updates)
 			{
-				updates = multiplayer.getUpdates( pid );
-				
-				
-				for(IGameUpdate update : updates)
-				{
-					ICharacterDriver driver = drivers.get( character.getPlayer() );
-					driver.update( update ); 
-				}
-				
-				pid ++;
+				ICharacterDriver driver = drivers.get( character.getPlayer() );
+				driver.update( update ); 
 			}
 			
+			pid ++;
 		}
 	}
 	
@@ -88,6 +93,12 @@ public class IngameDispatcherThread implements Runnable
 	@Override
 	public String toString() { return "dispatcher-" + multiplayer.toString(); }
 	
-	public void togglePause() { this.isPaused = !this.isPaused; }
+	public void togglePause() { 
+		this.isPaused = !this.isPaused; 
+		if(!isPaused)
+		{
+			flushUpdates();
+		}
+	}
 
 }

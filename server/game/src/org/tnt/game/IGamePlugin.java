@@ -4,7 +4,6 @@ import io.netty.channel.Channel;
 
 import java.util.List;
 
-import org.tnt.account.Character;
 import org.tnt.multiplayer.MultiplayerGame;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 
@@ -25,7 +24,7 @@ public interface IGamePlugin
 	
 	public void init();
 	
-	public IGameSimulator createSimulation( List <Character> characters );
+	public GameSimulator createSimulation( MultiplayerGame game );
 	
 	public IngameProtocolHandler createNetworkCharacterDriver(Channel channel, MultiplayerGame game, int pid);
 }

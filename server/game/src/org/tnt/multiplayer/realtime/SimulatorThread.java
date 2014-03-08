@@ -2,7 +2,7 @@ package org.tnt.multiplayer.realtime;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
-import org.tnt.game.IGameSimulator;
+import org.tnt.game.GameSimulator;
 import org.tnt.multiplayer.IGameResults;
 import org.tnt.multiplayer.IGameUpdate;
 import org.tnt.multiplayer.MultiplayerGame;
@@ -24,7 +24,7 @@ public class SimulatorThread implements Runnable
 	private long startTime;
 	private long time;
 	
-	private final IGameSimulator simulator;
+	private final GameSimulator simulator;
 	
 	private final MultiplayerGame multiplayer;
 	
@@ -38,10 +38,10 @@ public class SimulatorThread implements Runnable
 	private boolean isPaused = true;
 	
 	private static final long HEARTBEAT = 30; // ms
-
+	
 	////////////////////////////////////////////////////////////
 	
-	public SimulatorThread(MultiplayerGame multiplayer, IGameSimulator simulator)
+	public SimulatorThread(MultiplayerGame multiplayer, GameSimulator simulator)
 	{
 		this.simulator = simulator;
 		this.multiplayer = multiplayer;
@@ -58,8 +58,6 @@ public class SimulatorThread implements Runnable
 		long stepTime;
 		
 		IGameResults results = null;
-		
-		simulator.init();
 		
 		isAlive = true;
 		
@@ -82,15 +80,8 @@ public class SimulatorThread implements Runnable
 				time += stepTime;
 
 				// advancing game and getting updates
-				simulator.step( stepTime, updatesBuffer );
-				
-				// dispatching updates
-				// TODO: should be a separate controllable frequency
-				// TODO: this copying is unnecessary
-				for(int pid : updatesBuffer.keys())
-				{
-					multiplayer.addUpdate( pid, updatesBuffer.get( pid ) );
-				}
+				simulator.step( stepTime, time );
+
 			}
 			
 			updateTime = now; 
@@ -140,5 +131,5 @@ public class SimulatorThread implements Runnable
 	@Override
 	public String toString() { return "simulator-" + multiplayer.toString(); }
 
-	public IGameSimulator getSimulator() { return simulator; }
+	public GameSimulator getSimulator() { return simulator; }
 }

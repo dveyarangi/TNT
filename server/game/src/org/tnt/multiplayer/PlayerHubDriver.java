@@ -71,7 +71,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 		
 		this.hubHandler = new HubProtocolHandler( channel, hub, player );
 		
-		switchToAdmin();
+		switchToHub();
 		
 	}
 	
@@ -95,6 +95,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	{
 		// write game start to game room participant
 		hubHandler.write( MSGo.GO );
+		
 		// switching to in-game protocol mode
 		// from now until the end of the game, player communications 
 		// are managed by {@link IngameProtocoHandler}
@@ -108,7 +109,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	public void gameEnded( IGameResults results )
 	{
 		// switching game to game hall protocol.
-		switchToAdmin();
+		switchToHub();
 		
 		hubHandler.write( results );
 	}
@@ -120,15 +121,15 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	 * @param pid
 	 * @return
 	 */
-	ICharacterDriver switchToRealTime(MultiplayerGame multiplayer, int pid) 
+	ICharacterDriver switchToRealTime(MultiplayerGame game, int pid) 
 	{ 
-		// removing administration protocol handlers:
+		// removing hub protocol handlers:
 		pipeline.remove( FRAME );
 		pipeline.remove( HubProtocolHandler.NAME );
 		
 		
 		// registering ingame protocol handler:
-		IngameProtocolHandler handler = multiplayer.getPlugin().createNetworkCharacterDriver( channel, multiplayer, pid );
+		IngameProtocolHandler handler = game.getPlugin().createNetworkCharacterDriver( channel, game, pid );
 		
 		activeHandler = handler;
 		pipeline.addLast( IngameProtocolHandler.NAME, activeHandler );
@@ -140,7 +141,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	 * Reconfigures channel's pipleline for administration protocol
 	 * @return
 	 */
-	HubProtocolHandler switchToAdmin()    
+	HubProtocolHandler switchToHub()    
 	{
 		// removing ingame protocol handler:
 		pipeline.remove( FRAME );
@@ -149,7 +150,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 			pipeline.remove( IngameProtocolHandler.NAME );
 		}
 		
-		// registering administration protocol handlers:
+		// registering hub protocol handlers:
 		activeHandler = hubHandler;
 		
 		pipeline.addLast( FRAME,                     new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );

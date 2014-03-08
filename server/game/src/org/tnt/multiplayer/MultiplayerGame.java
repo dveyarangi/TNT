@@ -13,8 +13,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
 import org.tnt.account.Character;
+import org.tnt.game.GameSimulator;
 import org.tnt.game.IGamePlugin;
-import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.realtime.IMultiplayerGameListener;
 import org.tnt.multiplayer.realtime.IngameDispatcherThread;
 import org.tnt.multiplayer.realtime.SimulatorThread;
@@ -38,15 +38,11 @@ public class MultiplayerGame
 	 */
 	private final IGamePlugin plugin;
 
-	/**
-	 * Maps short ingame ids to queue of updates to be sent to the client.
-	 */
-	private final TIntObjectHashMap<Queue <IGameUpdate>> updates;
 	
 	/**
 	 * Game simulator, encapsulates game logic and generates updates for game clients.
 	 */
-	private final IGameSimulator simulator;
+	private final GameSimulator simulator;
 	
 	/**
 	 * Simulator thread, executes the simulator step by step
@@ -62,19 +58,29 @@ public class MultiplayerGame
 	/**
 	 * Participating characters and their corresponding short ids.
 	 */
-	private final List <Character> characters = new LinkedList <> ();
+	private final List <Character> characters;
 	
 	/**
 	 * Characters mapped to ingame communication protocol handlers.
 	 */
 	private Map <Character, ICharacterDriver> drivers;
-	
-	private Queue <ICharacterAction> actions = new ConcurrentLinkedQueue <ICharacterAction> ();
-
 	/**
 	 * Game lifecycle listener
 	 */	
 	private IMultiplayerGameListener	listener;
+	
+	/**
+	 * Maps short ingame ids to queues of actions received from client.
+	 */
+	private final TIntObjectHashMap<Queue <ICharacterAction>> actions;
+	
+	/**
+	 * Maps short ingame ids to queues of updates to be sent to the client.
+	 */
+	private final TIntObjectHashMap<Queue <IGameUpdate>> updates;
+	
+	private final boolean [] playerStates;
+
 
 	public MultiplayerGame(GameRoom room)
 	{
@@ -82,13 +88,29 @@ public class MultiplayerGame
 		
 		this.plugin = room.getPlugin();
 		
-		this.updates = new TIntObjectHashMap <> ();
+		this.characters = new LinkedList <> ();
 		
-		// create game simulator
-		this.simulator = plugin.createSimulation( room.getCharacters() );
+		// creating character event queues:
+		this.updates = new TIntObjectHashMap <> ();
+		this.actions = new TIntObjectHashMap <> ();
 
-		// register characters and ids:
-
+		int charNum = room.getCharacters().size();
+		
+		playerStates = new boolean[charNum];
+		
+		// creating character event queues:
+		for( int pid = 0; pid < charNum; pid ++)
+		{
+			characters.add( room.getCharacters().get( pid ) );
+			
+			actions.put( pid,  new ConcurrentLinkedQueue <ICharacterAction> () );
+			updates.put( pid,  new ConcurrentLinkedQueue <IGameUpdate> () );
+			
+			playerStates[pid] = false;
+		}
+		
+		// creating game simulator:
+		this.simulator = plugin.createSimulation( this );
 		
 	}
 	
@@ -102,6 +124,8 @@ public class MultiplayerGame
 	 */
 	void start(ExecutorService threadPool, Map <Character, ICharacterDriver> drivers)
 	{
+
+		
 		this.simulatorThread  = new SimulatorThread( this, simulator );
 		threadPool.submit( simulatorThread );
 		
@@ -134,20 +158,6 @@ public class MultiplayerGame
 	}
 
 	/**
-	 * Put client updates for specified character id
-	 * @param pid
-	 * @param update
-	 */
-	public void addUpdate( int pid, IGameUpdate update )
-	{
-		synchronized( this.updates )
-		{
-			Queue <IGameUpdate> charUpdates  = this.updates.get( pid );
-			charUpdates.add( update );
-		}
-	}
-	
-	/**
 	 * Terminate game threads and 
 	 */
 	public void stop()
@@ -173,54 +183,50 @@ public class MultiplayerGame
 	 */
 	public void setGameAcknowledged( int pid )
 	{
-		synchronized( this.updates )
-		{
-			// creating new updates queue for this character:
-			Queue <IGameUpdate> pUpdates = new LinkedList <IGameUpdate> ();
-			updates.put( pid, pUpdates );
-			
-			// adding the initial character state update:
-			IGameUpdate update = simulator.getCharacterUpdate( pid );
-			if(update == null)
-			{
-				log.error( "Got null update from game simulator %s", new Exception(), simulator );
-				return;
-			}
-			
-			pUpdates.add( update );
-			log.debug("Game %s character [%d] has acknowledged game start", this.toString(), pid);
-			
-			// checking if all clients have acknowledged the game start:
-			if(updates.size() == characters.size())
-			{
-				int cpid = 0;
-				for(Character character : characters)
-				{
-					ICharacterDriver driver = drivers.get( character );
-					driver.setStarted( updates.get( cpid ).poll() );
-					cpid ++;
-				}
-				
-				simulatorThread.togglePause();
-				dispatcherThread.togglePause();
-				
-				log.debug("Game %s has started", this.toString());
-			}
-		}
-	}
+		
+		log.debug("Game %s character [%d] has acknowledged game start", this.toString(), pid);
 
-	/**
-	 * Inform game simulator of incoming player action.
-	 * @param pid
-	 * @param action
-	 */
-	public void addCharacterAction( int pid, ICharacterAction action )
-	{
-		simulator.addCharacterAction( pid, action );
+		playerStates[pid] = true;
+		// checking if all clients have acknowledged the game start:
+		for(boolean ready : playerStates) if(!ready) return;
+
+		// starting game:
+		for(int cpid = 0; cpid < playerStates.length; cpid ++)
+		{
+			// adding the initial character state update:
+			putCharacterUpdate( cpid, simulator.getStartingUpdate( cpid ) );
+		}
+			
+		dispatcherThread.togglePause();
+		simulatorThread.togglePause();
+			
+		log.debug("Game %s has started", this.toString());
 	}
+	
+	
 
 	public IGamePlugin getPlugin() { return plugin; }
 
-	void setListener( IMultiplayerGameListener listener ) {this.listener = listener; } 
+	void setListener( IMultiplayerGameListener listener ) {this.listener = listener; }
+
+	public void putCharacterUpdate( int pid, IGameUpdate update )
+	{
+		if(update == null)
+		{
+			log.error( "Got null update from game simulator [%s], player id %d", simulator, pid );
+			return;
+		}
+		updates.get( pid ).add( update );
+	}
+
+	public Queue<ICharacterAction> getCharacterAction( int pid )
+	{
+		return actions.get( pid );
+	}
+
+	public void putCharacterAction( int pid, ICharacterAction action )
+	{
+		actions.get( pid ).add( action );
+	} 
 
 }

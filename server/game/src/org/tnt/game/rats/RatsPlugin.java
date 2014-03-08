@@ -2,14 +2,13 @@ package org.tnt.game.rats;
 
 import io.netty.channel.Channel;
 
-import java.util.List;
-
-import org.tnt.account.Character;
+import org.tnt.game.GamePlugin;
+import org.tnt.game.GameSimulator;
 import org.tnt.game.IGamePlugin;
-import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.MultiplayerGame;
 import org.tnt.multiplayer.realtime.IngameProtocolHandler;
 
+@GamePlugin
 public class RatsPlugin implements IGamePlugin
 {
 	
@@ -24,9 +23,9 @@ public class RatsPlugin implements IGamePlugin
 		
 	}
 	@Override
-	public IGameSimulator createSimulation( List <Character> characters )
+	public GameSimulator createSimulation( MultiplayerGame game )
 	{
-		return new RatsSimulation( characters );	
+		return new RatsSimulation( game );	
 	}
 
 	@Override

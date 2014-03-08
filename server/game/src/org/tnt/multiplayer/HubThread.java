@@ -51,8 +51,10 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 	 * Starts multiplayer game from the specified room
 	 * @param gameroom
 	 */
-	public void startGame(MultiplayerGame game )
+	public void startGame(GameRoom room )
 	{
+		MultiplayerGame game = new MultiplayerGame( room );
+
 		game.setListener( this );
 		
 		Map <Character, ICharacterDriver> handlers = new HashMap <> ();

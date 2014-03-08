@@ -13,7 +13,11 @@ import com.google.common.collect.Multimap;
 import com.spinn3r.log5j.Logger;
 
 /**
- * Matches players to games
+ * This is hub for players that handles non-ingame client activity.
+ * 
+ * <li> registers connected players
+ * <li> registers player game requests
+ * <li> creates {@link GameRoom}s and adds players to them
  * TODO: clean finished games
  * TODO: better matchfinding logic
  * 
@@ -28,8 +32,8 @@ public class Hub
 	private final Logger log = Logger.getLogger(this.getClass());
 	
 	/**
-	 * List of players currently connected to players.
-	 * Each player has a corresponding channel handler, that manages current communication protocol with player's client
+	 * List of players currently available in the hub.
+	 * Each player has a corresponding player driver, to receive or send messages to player controller
 	 */
 	private final Map <Player, IPlayerDriver> activePlayers = new HashMap <> ();
 	
@@ -153,14 +157,13 @@ public class Hub
 				}
 				
 				// creating multiplayer game handler:
-				MultiplayerGame game = new MultiplayerGame( gameroom );
-				thread.startGame(game);
+				thread.startGame( gameroom );
 				
 			}
 		}
 	}
 	
-	// TODO sync this with room start
+	// TODO sync this with room start?
 	public void removeFromGame( Player player )
 	{
 		synchronized(pendingRoomsByType)

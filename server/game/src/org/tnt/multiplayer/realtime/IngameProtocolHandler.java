@@ -92,7 +92,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 
     	case RUNNING:	
     		// TODO: decouple simulator and network threads?
-    		multiplayer.addCharacterAction( pid, parseClientUpdate( buffer ) );
+    		multiplayer.putCharacterAction( pid, parseClientUpdate( buffer ) );
     		break;
     	case OVER:
     		// TODO:
