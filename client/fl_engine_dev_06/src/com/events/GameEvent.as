@@ -10,11 +10,13 @@ package com.events
 	{
 		
 		public static const START:String = "start"; // start game
-		public static const START_RUN:String = "startRun"; //Player starts running
+		public static const FALSE_START:String = "falseStart" //Players FALSE START
+		public static const PLAYER_START_RUN:String = "playerStartRun"; //Player starts running
+		public static const PLAYER_ACTION_START:String = "playerActionStart"; //Player starts running
+		public static const PLAYER_ACTION_END:String = "playerActionEnd"; //Player starts running
+		public static const PLAYER_FINISHED:String = "playerFinished"; //Player end running
 		public static const END:String = "end" //END game
-		public static const FALSE_START:String = "falsStart" //Players FALSE START
-		
-		
+
 		public function GameEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false) 
 		{ 
 			super(type, bubbles, cancelable);	
