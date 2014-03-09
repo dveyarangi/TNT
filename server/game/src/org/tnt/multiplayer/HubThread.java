@@ -1,14 +1,14 @@
 package org.tnt.multiplayer;
 
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.tnt.account.Character;
 import org.tnt.account.Player;
-import org.tnt.multiplayer.realtime.IMultiplayerGameListener;
+import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.multiplayer.realtime.IArenaListener;
 
 import com.spinn3r.log5j.Logger;
 
@@ -20,7 +20,7 @@ import com.spinn3r.log5j.Logger;
  * @author Fima
  *
  */
-public class HubThread extends Thread implements IMultiplayerGameListener
+public class HubThread extends Thread implements IArenaListener
 {
 	/**
 	 * A logger
@@ -38,7 +38,7 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 	/**
 	 * Registry of games in progress
 	 */
-	private final Map <Player, MultiplayerGame> runningGames = new IdentityHashMap<> ();
+	private final Map <Player, Arena> runningGames = new IdentityHashMap<> ();
 	
 	private volatile boolean isAlive = false;
 
@@ -53,39 +53,30 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 	 */
 	public void startGame(GameRoom room )
 	{
-		MultiplayerGame game = new MultiplayerGame( room );
+
+		Arena game = new Arena( room );
 
 		game.setListener( this );
 		
-		Map <Character, ICharacterDriver> handlers = new HashMap <> ();
-		
 		synchronized(runningGames)
 		{
-			int pid = 0;
-			for(Character character : game.getCharacters())
+			
+			for(int pid = 0; pid < game.getAvatars().length; pid ++)
 			{
-				Player player = character.getPlayer();
+				Avatar avatar = game.getAvatars()[pid];
+				Player player = avatar.getPlayer();
 				
 				IPlayerDriver playerDriver = hub.getPlayer( player );
+				avatar.gameCreated ( playerDriver.playerInGame( room, avatar ) );
 				
-				// sending game ready to all participants:
-				ICharacterDriver charDriver = playerDriver.gameStarted( game, pid );
-				
-				/////////////////////////////////////////////////////////////////////
-				// this was the last admin message, now real-time protocol starts
-				
-				// swapping to real time protocol:
-				handlers.put( character, charDriver );
-				
+					
 				// updating running games registry:
 				runningGames.put( player, game );
-				
-				pid ++;
 			}
 		}	
 		
 		// starting game:
-		game.start( threadPool, handlers );
+		game.start( threadPool );
 	}
 
 	@Override
@@ -111,25 +102,32 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 	}
 
 	@Override
-	public void gameOver( MultiplayerGame game, IGameResults results )
+	public void gameOver( Arena game, IGameResults results )
 	{
 		
 		synchronized(runningGames)
 		{
-			for(Character character : game.getCharacters())
+			for(Avatar avatar : game.getAvatars())
 			{
-				runningGames.remove( character.getPlayer() );
+				runningGames.remove( avatar.getPlayer() );
 				
-				IPlayerDriver driver = hub.getPlayer( character.getPlayer() );
+				IPlayerDriver driver = hub.getPlayer( avatar.getPlayer() );
 				
 				driver.gameEnded( results );
+				
+				driver.playerInHub( hub );
 				
 			}
 		}
 	}
 
+	public void safeStop()
 	{
-		// TODO Auto-generated method stub
+		this.isAlive = false;
 		
+		for(Arena game : runningGames.values())
+		{
+			game.stop();
+		}
 	}
 }

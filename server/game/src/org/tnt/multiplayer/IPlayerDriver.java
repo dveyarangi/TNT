@@ -1,5 +1,10 @@
 package org.tnt.multiplayer;
 
+import org.tnt.multiplayer.network.hub.MSClose;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.multiplayer.realtime.ICharacterDriver;
+
+
 
 
 
@@ -24,12 +29,14 @@ public interface IPlayerDriver
 	 * @param pid
 	 * @return Handle to control behavior of in-game character this player controls.
 	 */
-	public ICharacterDriver gameStarted(MultiplayerGame game, int pid);
-
+	public ICharacterDriver playerInGame( GameRoom room, Avatar avatar );
 	/**
 	 * Invoked when game ends.
 	 * @param results
 	 */
 	void gameEnded( IGameResults results );
 
+	void playerInHub( Hub hub );
+
+	public void stop(MSClose reason);
 }

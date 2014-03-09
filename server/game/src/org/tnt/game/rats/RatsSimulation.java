@@ -2,8 +2,8 @@ package org.tnt.game.rats;
 
 import org.tnt.game.GameSimulator;
 import org.tnt.multiplayer.IGameResults;
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.MultiplayerGame;
+import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.multiplayer.realtime.IAvatarUpdate;
 
 public class RatsSimulation extends GameSimulator
 {
@@ -12,7 +12,7 @@ public class RatsSimulation extends GameSimulator
 	
 	private final IGameResults results = null;
 	
-	public RatsSimulation( MultiplayerGame game )
+	public RatsSimulation( Arena game )
 	{
 		super( game );
 	}
@@ -23,22 +23,22 @@ public class RatsSimulation extends GameSimulator
 	{
 		int time = (int)gameTime;
 		
-		for(int pid = 0; pid < getMaxCapacity(); pid ++)
+		for(int pid = 0; pid < getAvatars().length; pid ++)
 		{
-			putCharacterUpdate( pid, createCharacterUpdate( pid, time ) );
-			pid ++;
-		}
+			getAvatars()[pid].addUpdate( createCharacterUpdate( pid, time ) );
 
+		}
+		log.debug( "Hola from rats simulator!" );
 	}
 
 
 	@Override
-	public IGameUpdate getStartingUpdate( int pid )
+	public IAvatarUpdate getStartingUpdate( int pid )
 	{
 		return new ServerPacket(pid, 0, 0, CharacterAction.START);
 	}
 
-	private IGameUpdate createCharacterUpdate( int pid, int time )
+	private IAvatarUpdate createCharacterUpdate( int pid, int time )
 	{
 		return new ServerPacket(pid, time, 0, CharacterAction.START);
 	}

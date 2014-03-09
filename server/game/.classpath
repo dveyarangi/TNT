@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="lib/prod/reflections-0.9.9-RC1.jar"/>
 	<classpathentry kind="lib" path="lib/prod/javassist.jar"/>
 	<classpathentry kind="lib" path="lib/prod/util-1.0.b25.jar"/>
+	<classpathentry kind="lib" path="lib/dev/stop-button-1.0.r1.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

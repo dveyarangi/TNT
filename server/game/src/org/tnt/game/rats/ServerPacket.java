@@ -2,9 +2,8 @@ package org.tnt.game.rats;
 
 import io.netty.buffer.ByteBuf;
 
-import org.tnt.account.Character;
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.realtime.IServerPacket;
+import org.tnt.multiplayer.network.realtime.IServerPacket;
+import org.tnt.multiplayer.realtime.IAvatarUpdate;
 
 
 /**
@@ -15,7 +14,7 @@ import org.tnt.multiplayer.realtime.IServerPacket;
  * @author Fima
  *
  */
-public class ServerPacket implements IGameUpdate
+public class ServerPacket implements IAvatarUpdate, IServerPacket
 {
 	/**
 	 * Id of the player this packet addresses to

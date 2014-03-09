@@ -21,10 +21,9 @@ public class TNTConfig
 
 	/**
 	 * Loads server configuration.
-	 * @param args command line arguments.
 	 * @return
 	 */
-	public static TNTConfig load(String [] args)
+	public static TNTConfig load()
 	{
 		InputStream stream = null;
 		try 
@@ -58,7 +57,7 @@ public class TNTConfig
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 	
-	private ServerConfig server = new ServerConfig();
+	private final NetworkConfig server = new NetworkConfig();
 	
-	public ServerConfig getServerConfig() { return server; }
+	public NetworkConfig getServerConfig() { return server; }
 }	

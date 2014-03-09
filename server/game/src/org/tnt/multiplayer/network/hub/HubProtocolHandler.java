@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.hub;
+package org.tnt.multiplayer.network.hub;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -52,7 +52,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	 * Client messages autoresolve preffix. Used by {@link #inGson} to load
 	 * messages into correct instance of {@link IClientMessage}
 	 */
-	private static final String		MESSAGE_TYPE_PREFIX	= "org.tnt.multiplayer.hub.MC";
+	private static final String		MESSAGE_TYPE_PREFIX	= "org.tnt.multiplayer.network.hub.MC";
 	private static final String		MESSAGE_TYPE_SUFFIX	= "";
 
 	/**
@@ -94,7 +94,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	public void channelInactive( ChannelHandlerContext ctx ) throws Exception
 	{
 		// dropping player from the orchestrator:
-		hub.unregisterPlayerHandler( player );
+		hub.playerDisconnected( player );
 	}
 
 	/**
@@ -120,16 +120,9 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 			// we will get a concrete message instance here:
 			IClientMessage message = inGson.fromJson( jsonStr, IClientMessage.class );
 
-			if( message instanceof MCQuit )
-			{ // game quit message is sent when player decides to leave game
-				// lobby or cancel matchfinding
-				hub.removeFromGame( player );
-			}
-			else
-			{
-				// executing message logic:
-				message.process( player, hub );
-			}
+
+			// executing message logic:
+			message.process( player, hub );
 
 		}
 		catch( HubException e )

@@ -1,11 +1,7 @@
 package org.tnt.multiplayer.realtime;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
-
 import org.tnt.game.GameSimulator;
 import org.tnt.multiplayer.IGameResults;
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.MultiplayerGame;
 
 import com.spinn3r.log5j.Logger;
 
@@ -26,7 +22,7 @@ public class SimulatorThread implements Runnable
 	
 	private final GameSimulator simulator;
 	
-	private final MultiplayerGame multiplayer;
+	private final Arena multiplayer;
 	
 	////////////////////////////////////////////////////////////
 	
@@ -41,7 +37,7 @@ public class SimulatorThread implements Runnable
 	
 	////////////////////////////////////////////////////////////
 	
-	public SimulatorThread(MultiplayerGame multiplayer, GameSimulator simulator)
+	public SimulatorThread(Arena multiplayer, GameSimulator simulator)
 	{
 		this.simulator = simulator;
 		this.multiplayer = multiplayer;
@@ -50,8 +46,6 @@ public class SimulatorThread implements Runnable
 	@Override
 	public void run()
 	{
-		
-		TIntObjectHashMap <IGameUpdate> updatesBuffer = new TIntObjectHashMap <> ();
 		
 		long updateTime = startTime = System.nanoTime();
 		long now;

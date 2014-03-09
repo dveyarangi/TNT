@@ -7,6 +7,8 @@ import java.util.Map;
 import org.tnt.account.Character;
 import org.tnt.account.Player;
 import org.tnt.game.IGamePlugin;
+import org.tnt.multiplayer.network.PlayerListener;
+import org.tnt.multiplayer.network.hub.MSClose;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -24,7 +26,7 @@ import com.spinn3r.log5j.Logger;
  * @author Fima
  *
  */
-public class Hub
+public class Hub implements PlayerListener
 {
 	/**
 	 * A logger
@@ -61,20 +63,27 @@ public class Hub
 		thread.start();
 	}
 
-	
+
 	/**
 	 * Registers player connection within the orchestrator.
 	 * Called after player had successfully authenticated.
 	 * @param handler
 	 */
-	public boolean registerPlayerHandler( Player player, PlayerHubDriver handler )
+	@Override
+	public boolean playerConnected( Player player, IPlayerDriver driver )
 	{
+		
 		if(activePlayers.containsKey( player ))
 		{
 			return false;
 		}
-		log.debug("Registered player handler for player " + player);
-		activePlayers.put( player, handler );
+		
+		activePlayers.put( player, driver );
+		
+		log.debug("Registered hub player %s.", player);
+		// informing player driver that player is in hub now:
+		driver.playerInHub( this );
+		
 		
 		return true;
 	}
@@ -84,12 +93,16 @@ public class Hub
 	 * Called when player client disconnects from the server
 	 * @param handler
 	 */
-	public void unregisterPlayerHandler( Player player )
+	@Override
+	public void playerDisconnected( Player player )
 	{
-		log.debug("Unregistered player handler for player " + player);
+		// removing from list of active players:
 		activePlayers.remove( player );
 			
-		removeFromGame( player );
+		// removing from game rooms, if is in any:
+		removeFromGameRoom( player );
+		
+		log.debug("Player %s left hub.", player);
 	}
 
 	/**
@@ -164,7 +177,7 @@ public class Hub
 	}
 	
 	// TODO sync this with room start?
-	public void removeFromGame( Player player )
+	public void removeFromGameRoom( Player player )
 	{
 		synchronized(pendingRoomsByType)
 		{			
@@ -188,5 +201,19 @@ public class Hub
 	{
 		return activePlayers.get( player );
 	}
+
+
+	public void safeStop()
+	{
+		synchronized(pendingRoomsByType)
+		{
+			log.debug( "Disconnecting from pending clients (%d total)...", activePlayers.size() );
+			// dropping players from rooms:
+			for(IPlayerDriver driver : activePlayers.values())
+				driver.stop(MSClose.SERVER_SHUTDOWN);
+			
+		}
+	}
+
 
 }

@@ -1,17 +1,17 @@
 package org.tnt.game;
 
-import java.util.Queue;
-
-import org.tnt.multiplayer.ICharacterAction;
 import org.tnt.multiplayer.IGameResults;
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.MultiplayerGame;
+import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.multiplayer.realtime.IAvatarUpdate;
+
+import com.spinn3r.log5j.Logger;
 
 /**
  * Interface for server-side game simulation process.
  * 
- * Implementation may access character input by {@link #getCharacterAction(int)}
- * and put character state updates via {@link #putCharacterUpdate(int, IGameUpdate)}  
+ * Implementation may access character channel via {@link #getAvatars()}
+ * and put character state updates via {@link #putCharacterUpdate(int, IAvatarUpdate)}  
  * 
  * @author Fima
  *
@@ -19,9 +19,11 @@ import org.tnt.multiplayer.MultiplayerGame;
 public abstract class GameSimulator
 {
 	
-	private final MultiplayerGame game;
+	private final Arena game;
 	
-	public GameSimulator (MultiplayerGame game)
+	protected final Logger log = Logger.getLogger(this.getClass());;
+	
+	public GameSimulator (Arena game)
 	{
 		this.game = game;
 	}
@@ -46,28 +48,10 @@ public abstract class GameSimulator
 	public abstract void destroy();
 
 
-	public abstract IGameUpdate getStartingUpdate( int pid );
+	public abstract IAvatarUpdate getStartingUpdate( int pid );
 	
-	/**
-	 * Inform simulator of character action
-	 * @param pid
-	 * @param action
-	 */
-	public void putCharacterUpdate( int pid, IGameUpdate update )
-	{
-		game.putCharacterUpdate(pid, update);
-	}
-
-	/**
-	 * Retrieve update for specified character
-	 * @param pid
-	 * @return
-	 */
-	protected Queue <ICharacterAction> getCharacterAction( int pid )
-	{
-		return game.getCharacterAction( pid );
-	}
-	
+	protected Avatar [] getAvatars() { return game.getAvatars(); }
+ 	
 	/**
 	 * Returns results if the simulation is over
 	 * @return null if the simulation is in progress, results otherwise

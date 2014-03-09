@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.realtime;
+package org.tnt.multiplayer.network.realtime;
 
 /**
  * Marker interface for client messages.

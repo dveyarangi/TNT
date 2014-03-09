@@ -1,6 +1,6 @@
 package org.tnt.config;
 
-public class ServerConfig
+public class NetworkConfig
 {
 	private int port = 4242;
 	

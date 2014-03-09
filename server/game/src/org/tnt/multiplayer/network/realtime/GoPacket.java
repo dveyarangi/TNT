@@ -1,9 +1,9 @@
-package org.tnt.multiplayer.realtime;
+package org.tnt.multiplayer.network.realtime;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.util.CharsetUtil;
 
-import org.tnt.multiplayer.IGameUpdate;
+import org.tnt.multiplayer.realtime.IAvatarUpdate;
 
 /**
  * This packet is sent by server to order all clients to start game simulation.
@@ -11,7 +11,7 @@ import org.tnt.multiplayer.IGameUpdate;
  * 
  * @author fimar
  */
-public class GoPacket implements IGameUpdate
+public class GoPacket implements IAvatarUpdate, IServerPacket
 {
 	
 	private static byte [] message = "GOGO".getBytes(CharsetUtil.US_ASCII);

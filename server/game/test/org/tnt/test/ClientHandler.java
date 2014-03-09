@@ -8,11 +8,11 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 import org.tnt.game.rats.RatsPlugin;
-import org.tnt.multiplayer.auth.MSAuthResult;
-import org.tnt.multiplayer.hub.MCGameRequest;
-import org.tnt.multiplayer.hub.MSGameDetails;
-import org.tnt.multiplayer.hub.MSGo;
-import org.tnt.multiplayer.realtime.GoPacket;
+import org.tnt.multiplayer.network.auth.MSAuthResult;
+import org.tnt.multiplayer.network.hub.MCGameRequest;
+import org.tnt.multiplayer.network.hub.MSGameDetails;
+import org.tnt.multiplayer.network.hub.MSGo;
+import org.tnt.multiplayer.network.realtime.GoPacket;
 
 import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;

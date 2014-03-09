@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.tnt.multiplayer.auth;
+package org.tnt.multiplayer.network.auth;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -15,7 +15,7 @@ import java.nio.charset.Charset;
 import org.tnt.account.Player;
 import org.tnt.account.PlayerStore;
 import org.tnt.multiplayer.PlayerHubDriver;
-import org.tnt.multiplayer.Hub;
+import org.tnt.multiplayer.network.PlayerListener;
 
 import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;
@@ -38,7 +38,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Multiplayer hub
 	 */
-	private final Hub hub;
+	private final PlayerListener listener;
 	
 	/**
 	 * Player store
@@ -55,11 +55,11 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 	
 	private final Gson gson;
 	
-	public AuthHandler(PlayerStore store, Hub hub)
+	public AuthHandler(PlayerStore store, PlayerListener listener)
 	{
 		this.store = store;
 		
-		this.hub = hub;
+		this.listener = listener;
 		
 		this.gson = new Gson();
 	}
@@ -107,22 +107,22 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
        		ReferenceCountUtil.release(msg); 
        	}
     	
+    	
+		log.debug( "Player %s was succesfully authenticated", credentials );
 
     	/////////////////////////////////////////////
     	// adding game handler with credentials info:
-      	
-   	
-    	PlayerHubDriver handler = new PlayerHubDriver( ctx.channel(), ctx.pipeline(), credentials, hub );
      	
-    	if(!hub.registerPlayerHandler( credentials, handler ))
+   	
+    	PlayerHubDriver handler = new PlayerHubDriver( ctx.channel(), ctx.pipeline(), credentials, listener );
+     	
+    	if(!listener.playerConnected( credentials, handler ))
     	{
        		log.warn( "Auth failed: player %s already logged in", credentials);
        		writeAuthResult( ctx, MSAuthResult.FAILED_ALREADY_LOGGED_IN);
        		return;
     	}    	
 
-        	
-   		log.debug( "Player %s was succesfully authenticated", credentials );
    		writeAuthResult( ctx,  MSAuthResult.OK );
 
    		// auth handler is no longer needed:
@@ -148,7 +148,10 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     {
 		ctx.writeAndFlush( gson.toJson( result ) + "\r\n" );
 		if(! result.isOk()) // terminating failed auth connection
+		{
+       		log.debug( "Auth failed: terminating client connection." );
 			ctx.close();
+		}
     }
 
 }

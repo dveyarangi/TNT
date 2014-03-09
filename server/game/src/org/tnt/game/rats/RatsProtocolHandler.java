@@ -3,16 +3,16 @@ package org.tnt.game.rats;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
-import org.tnt.multiplayer.ICharacterAction;
-import org.tnt.multiplayer.MultiplayerGame;
-import org.tnt.multiplayer.realtime.IngameProtocolHandler;
+import org.tnt.multiplayer.network.realtime.IngameProtocolHandler;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.multiplayer.realtime.IAvatarAction;
 
 public class RatsProtocolHandler extends IngameProtocolHandler
 {
 
-	public RatsProtocolHandler( Channel channel, MultiplayerGame multiplayer, int pid )
+	public RatsProtocolHandler( Channel channel, Avatar avatar )
 	{
-		super( channel, multiplayer, pid );
+		super( channel, avatar );
 	}
 
 	@Override
@@ -22,7 +22,7 @@ public class RatsProtocolHandler extends IngameProtocolHandler
 	public int getClientPacketSize() { return 16; }
 
 	@Override
-	protected ICharacterAction parseClientUpdate( ByteBuf buffer )
+	protected IAvatarAction parseClientUpdate( ByteBuf buffer )
 	{
 		// TODO Auto-generated method stub
 		return null;

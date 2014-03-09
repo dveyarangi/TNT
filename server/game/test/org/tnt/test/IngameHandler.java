@@ -7,25 +7,25 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.hub.MSGameDetails;
+import org.tnt.multiplayer.network.hub.MSGameDetails;
+import org.tnt.multiplayer.network.realtime.IServerPacket;
 
 import com.spinn3r.log5j.Logger;
 
 public class IngameHandler extends ChannelInboundHandlerAdapter
 {
 	
-	private Logger log = Logger.getLogger(this.getClass());
+	private final Logger log = Logger.getLogger(this.getClass());
 	
 	private static final int	CLIENT_PACKET_SIZE	= 16;
 
 	private static final int	SERVER_PACKET_SIZE	= 16;
 
-	private ByteBuf outBuffer;
+	private final ByteBuf outBuffer;
 	
-	private Channel channel;
+	private final Channel channel;
 	
-	private MSGameDetails details;
+	private final MSGameDetails details;
 	
 	public IngameHandler(Channel channel, MSGameDetails details)
 	{
@@ -47,7 +47,7 @@ public class IngameHandler extends ChannelInboundHandlerAdapter
 
 
 
-	public void write( IGameUpdate update )
+	public void write( IServerPacket update )
 	{
 		outBuffer.clear();
 		outBuffer.setZero( 0, CLIENT_PACKET_SIZE );

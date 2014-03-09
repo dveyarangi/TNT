@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.hub;
+package org.tnt.multiplayer.network.hub;
 
 import org.tnt.account.Player;
 import org.tnt.multiplayer.Hub;

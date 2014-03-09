@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.hub;
+package org.tnt.multiplayer.network.hub;
 
 public class MSError implements IServerMessage
 {

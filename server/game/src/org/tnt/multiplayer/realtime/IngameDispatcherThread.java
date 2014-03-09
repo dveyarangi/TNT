@@ -1,13 +1,5 @@
 package org.tnt.multiplayer.realtime;
 
-import java.util.Map;
-import java.util.Queue;
-
-import org.tnt.account.Character;
-import org.tnt.multiplayer.ICharacterDriver;
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.MultiplayerGame;
-
 import com.spinn3r.log5j.Logger;
 
 public class IngameDispatcherThread implements Runnable
@@ -28,17 +20,14 @@ public class IngameDispatcherThread implements Runnable
 	
 	private static final long HEARTBEAT = 50; // ms
 	
-	private final Map <Character, ICharacterDriver> drivers;
-	
-	private final MultiplayerGame multiplayer;
+	private final Avatar [] avatars;
 	
 	////////////////////////////////////////////////////////////
 	
 	
-	public IngameDispatcherThread(MultiplayerGame multiplayer, Map <Character, ICharacterDriver> drivers)
+	public IngameDispatcherThread(Avatar [] avatars)
 	{
-		this.multiplayer = multiplayer;
-		this.drivers = drivers;
+		this.avatars = avatars;
 	}
 
 	@Override
@@ -71,27 +60,14 @@ public class IngameDispatcherThread implements Runnable
 	
 	private void flushUpdates()
 	{
-		int pid = 0;
-		
-		Queue <IGameUpdate> updates;
-		for(Character character : multiplayer.getCharacters())
+
+		for(int pid = 0; pid < avatars.length; pid ++)
 		{
-			updates = multiplayer.getUpdates( pid );
-			
-			for(IGameUpdate update : updates)
-			{
-				ICharacterDriver driver = drivers.get( character.getPlayer() );
-				driver.update( update ); 
-			}
-			
-			pid ++;
+			avatars[pid].flushUpdates();
 		}
 	}
 	
 	public void safeStop() { this.isAlive = false; }
-	
-	@Override
-	public String toString() { return "dispatcher-" + multiplayer.toString(); }
 	
 	public void togglePause() { 
 		this.isPaused = !this.isPaused; 

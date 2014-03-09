@@ -1,4 +1,4 @@
-package org.tnt.multiplayer;
+package org.tnt.multiplayer.realtime;
 
 /**
  * Interface for talking to ingame character behavior implementation.
@@ -8,10 +8,10 @@ package org.tnt.multiplayer;
 public interface ICharacterDriver
 {
 
-	void update( IGameUpdate update );
+	void update( IAvatarUpdate update );
 
 	void stop();
 
-	void setStarted( IGameUpdate update );
+	void setStarted( IAvatarUpdate update );
 
 }

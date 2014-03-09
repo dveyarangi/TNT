@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.realtime;
+package org.tnt.multiplayer.network.realtime;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -6,10 +6,10 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import org.tnt.multiplayer.ICharacterAction;
-import org.tnt.multiplayer.ICharacterDriver;
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.MultiplayerGame;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.multiplayer.realtime.IAvatarAction;
+import org.tnt.multiplayer.realtime.ICharacterDriver;
+import org.tnt.multiplayer.realtime.IAvatarUpdate;
 
 /**
  * This class manages in-game fast protocol for a single client.
@@ -24,14 +24,10 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 	public static final String	NAME	= "ingame";
 	
 	/**
-	 * Multiplayer game this handler serves.
+	 * Multiplayer  this handler serves.
 	 */
-	private final MultiplayerGame multiplayer;
-	
-	/** 
-	 * Character short id (determined by character join order to the game room).
-	 */
-	private final int pid;
+	private final Avatar avatar;
+
 	
 	/**
 	 * Defines ingame protocol states
@@ -53,11 +49,11 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 	 */
 	private final ByteBuf outBuffer;
 	
-	public IngameProtocolHandler(Channel channel, MultiplayerGame multiplayer, int pid)
+	public IngameProtocolHandler(Channel channel, Avatar avatar)
 	{
 		this.channel = channel;
-		this.multiplayer = multiplayer;
-		this.pid = pid;
+		
+		this.avatar = avatar;
 		
 		outBuffer = Unpooled.wrappedBuffer( new byte [ getServerPacketSize() ] );
 	}
@@ -87,12 +83,12 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
     	switch(state)
     	{
     	case STARTING:
-    	   	multiplayer.setGameAcknowledged( pid );
+    		avatar.gameAcknowledged();
     	   	break;
 
     	case RUNNING:	
     		// TODO: decouple simulator and network threads?
-    		multiplayer.putCharacterAction( pid, parseClientUpdate( buffer ) );
+    		avatar.putActions( parseClientUpdate( buffer ) );
     		break;
     	case OVER:
     		// TODO:
@@ -106,7 +102,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
      * @param update
      */
 	@Override
-	public void setStarted( IGameUpdate update) 
+	public void setStarted( IAvatarUpdate update) 
     {
     	state = GameState.RUNNING;
     	update( update );
@@ -117,7 +113,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 	 * @param buffer
 	 * @return
 	 */
-    protected abstract ICharacterAction parseClientUpdate( ByteBuf buffer );
+    protected abstract IAvatarAction parseClientUpdate( ByteBuf buffer );
     
     /**
      * Sends the provided game update to the client. 
@@ -125,14 +121,14 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
      */
 
 	@Override
-	public void update( IGameUpdate update )
+	public void update( IAvatarUpdate update )
 	{
 		// resetting output buffer:
 		outBuffer.clear();
 		outBuffer.setZero( 0, getServerPacketSize() );
 		
 		// writing message to buffer
-		update.write( outBuffer );
+		((IServerPacket)update).write( outBuffer );
 		
 		// padding buffer to fixed packet lenght:
 		outBuffer.setIndex( 0, getServerPacketSize() );

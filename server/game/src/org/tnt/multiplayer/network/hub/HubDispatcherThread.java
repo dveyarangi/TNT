@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.tnt.multiplayer.hub;
+package org.tnt.multiplayer.network.hub;
 
 import java.util.LinkedList;
 import java.util.Queue;

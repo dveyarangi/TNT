@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.auth;
+package org.tnt.multiplayer.network.auth;
 
 
 /**

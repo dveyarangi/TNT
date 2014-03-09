@@ -9,10 +9,14 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.hub.HubProtocolHandler;
-import org.tnt.multiplayer.hub.MSGameDetails;
-import org.tnt.multiplayer.hub.MSGo;
-import org.tnt.multiplayer.realtime.IngameProtocolHandler;
+import org.tnt.multiplayer.network.PlayerListener;
+import org.tnt.multiplayer.network.hub.HubProtocolHandler;
+import org.tnt.multiplayer.network.hub.MSClose;
+import org.tnt.multiplayer.network.hub.MSGameDetails;
+import org.tnt.multiplayer.network.hub.MSGo;
+import org.tnt.multiplayer.network.realtime.IngameProtocolHandler;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.multiplayer.realtime.ICharacterDriver;
 
 import com.spinn3r.log5j.Logger;
 /**
@@ -47,31 +51,33 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	/**
 	 * Admin protocol handler instance.
 	 */
-	private final HubProtocolHandler hubHandler;
+	private HubProtocolHandler hubHandler;
 	
 	/**
 	 * Multiplayer hub
 	 */
-	private final Hub hub;
+	private final PlayerListener listener;
 	
 	/**
 	 * Player logged into this channel
 	 */
 	private final Player player;
 	
-	
-	public PlayerHubDriver ( Channel channel, ChannelPipeline pipeline, Player player, Hub hub)
+	/**
+	 * 
+	 * @param channel
+	 * @param pipeline
+	 * @param player
+	 * @param hub
+	 */
+	public PlayerHubDriver ( Channel channel, ChannelPipeline pipeline, Player player, PlayerListener listener)
 	{
 		this.pipeline = pipeline;
 		this.channel = channel;
 		
-		this.hub = hub;
+		this.listener = listener;
 		
 		this.player = player;
-		
-		this.hubHandler = new HubProtocolHandler( channel, hub, player );
-		
-		switchToHub();
 		
 	}
 	
@@ -91,7 +97,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	 * @return Handle to control behavior of in-game character this player controls.
 	 */
 	@Override
-	public ICharacterDriver gameStarted(MultiplayerGame game, int pid)
+	public ICharacterDriver playerInGame(GameRoom room, Avatar avatar)
 	{
 		// write game start to game room participant
 		hubHandler.write( MSGo.GO );
@@ -99,37 +105,13 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 		// switching to in-game protocol mode
 		// from now until the end of the game, player communications 
 		// are managed by {@link IngameProtocoHandler}
-		return switchToRealTime( game, pid );
-	}
-	/**
-	 * This methods is invoked by game hub when game ends.
-	 */
-
-	@Override
-	public void gameEnded( IGameResults results )
-	{
-		// switching game to game hall protocol.
-		switchToHub();
-		
-		hubHandler.write( results );
-	}
-	
-	/**
-	 * Reconfigures channel's pipeline for ingame protocol
-	 * 
-	 * @param multiplayer
-	 * @param pid
-	 * @return
-	 */
-	ICharacterDriver switchToRealTime(MultiplayerGame game, int pid) 
-	{ 
 		// removing hub protocol handlers:
 		pipeline.remove( FRAME );
 		pipeline.remove( HubProtocolHandler.NAME );
 		
 		
 		// registering ingame protocol handler:
-		IngameProtocolHandler handler = game.getPlugin().createNetworkCharacterDriver( channel, game, pid );
+		IngameProtocolHandler handler = room.getPlugin().createNetworkCharacterDriver( channel, avatar );
 		
 		activeHandler = handler;
 		pipeline.addLast( IngameProtocolHandler.NAME, activeHandler );
@@ -138,10 +120,21 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	}
 	
 	/**
-	 * Reconfigures channel's pipleline for administration protocol
+	 * This methods is invoked by game hub when game ends.
+	 */
+	@Override
+	public void gameEnded( IGameResults results )
+	{
+		
+		hubHandler.write( results );
+	}
+
+	/**
+	 * Reconfigures channel's pipeline for administration protocol
 	 * @return
 	 */
-	HubProtocolHandler switchToHub()    
+	@Override
+	public void playerInHub( Hub hub )    
 	{
 		// removing ingame protocol handler:
 		pipeline.remove( FRAME );
@@ -151,28 +144,36 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 		}
 		
 		// registering hub protocol handlers:
+		if(hubHandler == null)
+			hubHandler = new HubProtocolHandler( channel, hub, player );
 		activeHandler = hubHandler;
 		
 		pipeline.addLast( FRAME,                     new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
 		pipeline.addLast( HubProtocolHandler.NAME, hubHandler );
-		
-		return hubHandler;
 	}
 
+	/**
+	 * Called when client disconnection happens
+	 * TODO: maybe use flag instead and a collection thread.
+	 */
 	@Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
-		hub.unregisterPlayerHandler( player );
+		listener.playerDisconnected( player );
 	}
 	
-	
+	/**
+	 * Called when server reads something from client.
+	 * 
+	 * Just propagates the readout to current protocol handler, whether hub or ingame
+	 */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
     {
 		activeHandler.channelRead( ctx, msg );
     }
     
-
+    
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
     {
@@ -180,6 +181,14 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
     	
     	log.error( "Exception in game protocol", cause );
     }
+
+	@Override
+	public void stop(MSClose reason)
+	{
+		// write game start to game room participant
+		hubHandler.write( reason );
+		channel.close();
+	}
 
     
 }
