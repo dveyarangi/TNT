@@ -13,7 +13,7 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
 @Singleton
-public class TNTServer implements ITNTServer
+public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 {
 	private final Logger log = Logger.getLogger(this.getClass());
 
@@ -28,8 +28,14 @@ public class TNTServer implements ITNTServer
 	@Inject private INetworkThread network; 
 	
 	@Inject AuthHandler authenticator;
+	@Inject IShutdownHook shutdownHook;
 	
 	final long startTime = System.currentTimeMillis();
+	
+	public TNTServer()
+	{
+		super( "tnt-server" );
+	}
 	
 	@Override
 	public void init()
@@ -61,9 +67,11 @@ public class TNTServer implements ITNTServer
 		catch(Exception e)
 		{
 			log.fatal( "Failed to start server." );
+			fail();
+			return;
 		}
 		
-		Runtime.getRuntime().addShutdownHook( new ShutdownHook() );
+		Runtime.getRuntime().addShutdownHook( (Thread)shutdownHook );
 		log.info( "Server started in " + (System.currentTimeMillis() - startTime) + " ms." );
 	}
 
@@ -85,19 +93,25 @@ public class TNTServer implements ITNTServer
 		consoleThread.start();*/
 	}
 
-	
-	private class ShutdownHook extends Thread
-	{
-		ShutdownHook() 
-		{
-			super ("tnt-shutdown");
-		}
+
 		@Override
 		public void run()
 		{
+			log.info( "Shutting down server..." );
 			hub.safeStop();
 			network.safeStop();
-			log.info( "Started in (uptime " + (System.currentTimeMillis() - startTime) + " ms." );
+			log.info( "Server decomposed (uptime " + (System.currentTimeMillis() - startTime)/1000/60 + " min.)" );
+			System.exit( 1 );
 		}
-	}
+		@Override
+		public void fail()
+		{
+			this.start();
+		}
+		@Override
+		public void shutdown()
+		{
+			this.start();
+		}	
+
 }

@@ -9,7 +9,6 @@ public class Debug
 		StopButtonFrame stop = new StopButtonFrame(20, 20) {   
 		    @Override
 			public void processStopButtonAction() {  
-		        System.out.println("Stop Button Pressed!!!!");  
 		        System.exit(0);  
 		    };  
 		};  		

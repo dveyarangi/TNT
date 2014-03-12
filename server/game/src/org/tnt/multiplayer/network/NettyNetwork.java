@@ -17,27 +17,41 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.tnt.INetworkThread;
+import org.tnt.IShutdownHook;
 import org.tnt.config.NetworkConfig;
 import org.tnt.multiplayer.network.auth.AuthHandler;
+import org.tnt.multiplayer.network.auth.IAuthenticator;
 
 import com.spinn3r.log5j.Logger;
 
 @Singleton
-public class NetworkThread implements INetworkThread
+public class NettyNetwork implements INetworkThread
 {
 	private final Logger log = Logger.getLogger(this.getClass());
 	
 	private final NetworkConfig config;
 	
-	private final ServerBootstrap bootstrap;
+	private final IShutdownHook shutdownHook;
+	
+	private ServerBootstrap bootstrap;
 	
 	private ChannelFuture channel;
 	
+	private final IAuthenticator authenticator;
+	
 	@Inject
-	public NetworkThread(NetworkConfig config, final AuthHandler authenticator)
+	public NettyNetwork(NetworkConfig config, final IAuthenticator authenticator, IShutdownHook shutdownHook)
 	{
 		this.config = config;
-		
+		this.authenticator = authenticator;
+		this.shutdownHook = shutdownHook;
+	}
+	
+
+	@Override
+	public void init()
+	{
+		log.debug("Starting networking thread...");
 		ChannelInitializer <SocketChannel> channelInitializer = new ChannelInitializer<SocketChannel>() {
 			@Override public void initChannel( final SocketChannel ch ) throws Exception
 			{
@@ -61,17 +75,21 @@ public class NetworkThread implements INetworkThread
 		bootstrap.childHandler( channelInitializer );
 		bootstrap.option( ChannelOption.SO_BACKLOG, 128 );
 		bootstrap.childOption( ChannelOption.SO_KEEPALIVE, true );
+		
+		new Thread(this, "tnt-network").start();
+		
+//		Thread.sleep( 500 );
 	}
-	
 	
 	@Override
 	public void run()
 	{
+		int port = config.getPort();
 		try
 		{
 			// Bind and start to accept incoming connections.
-			channel = bootstrap.bind( config.getPort() ).sync();
-			log.info( "Listening on port %d...", config.getPort());
+			channel = bootstrap.bind( port ).sync();
+			log.info( "Listening on port %d...", port );
 
 			// Wait until the server socket is closed.
 			// In this example, this does not happen, but you can do that to
@@ -81,12 +99,12 @@ public class NetworkThread implements INetworkThread
 		}
 		catch(Exception e)
 		{
-			log.fatal( "Failed to bind server channel on port %d: %s", config.getPort(), e.getMessage());
+			log.fatal( "Failed to bind server channel on port %d: %s", port, e.getMessage());
+			shutdownHook.fail();
+			return;
 		}
-		finally
-		{
-			safeStop();
-		}
+		
+		safeStop();
 	}
 
 
@@ -100,12 +118,5 @@ public class NetworkThread implements INetworkThread
 		
 	}
 
-
-	@Override
-	public void init()
-	{
-		log.debug("Starting networking thread...");
-		new Thread(this, "tnt-network").start();
-	}
 	
 }

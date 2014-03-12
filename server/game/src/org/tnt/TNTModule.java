@@ -9,7 +9,9 @@ import org.tnt.multiplayer.IHub;
 import org.tnt.multiplayer.IHubThread;
 import org.tnt.multiplayer.IPlayerConnections;
 import org.tnt.multiplayer.PlayerConnections;
-import org.tnt.multiplayer.network.NetworkThread;
+import org.tnt.multiplayer.network.NettyNetwork;
+import org.tnt.multiplayer.network.auth.AuthHandler;
+import org.tnt.multiplayer.network.auth.IAuthenticator;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -26,8 +28,10 @@ public class TNTModule extends AbstractModule
 		bind( ICalculator.class ).          to( Calculator.class )          .in( Singleton.class);
 		bind( IGameFactory.class ).         to( GameFactory.class )         .in( Singleton.class);
 		bind( IPlayerStore.class ).         to( PlayerStore.class )         .in( Singleton.class);
-		bind( INetworkThread.class )       .to( NetworkThread.class )       .in( Singleton.class);
+		bind( INetworkThread.class )       .to( NettyNetwork.class )        .in( Singleton.class);
 		bind( IPlayerConnections.class )   .to( PlayerConnections.class )   .in( Singleton.class);
+		bind( IAuthenticator.class )       .to( AuthHandler.class )         .in( Singleton.class);
+		bind( IShutdownHook.class )        .to( TNTServer.class )           .in( Singleton.class);
 //		bind( IHub.class ).      to( Hub.class );
 //		bind( IHub.class ).      to( Hub.class );
 //		bind( IHub.class ).      to( Hub.class );

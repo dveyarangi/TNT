@@ -1,6 +1,8 @@
 package org.tnt.multiplayer.network.auth;
 
-public interface IAuthenticator
+import io.netty.channel.ChannelHandler;
+
+public interface IAuthenticator extends ChannelHandler
 {
 
 }

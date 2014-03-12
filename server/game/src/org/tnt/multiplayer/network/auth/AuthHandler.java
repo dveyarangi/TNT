@@ -35,7 +35,7 @@ import com.spinn3r.log5j.Logger;
  */
 @Sharable
 @Singleton
-public class AuthHandler extends ChannelInboundHandlerAdapter
+public class AuthHandler extends ChannelInboundHandlerAdapter implements IAuthenticator
 {
 	private final static Logger log = Logger.getLogger(AuthHandler.class);
 	
