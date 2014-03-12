@@ -5,7 +5,6 @@ import org.tnt.config.TNTConfig;
 import org.tnt.debug.Debug;
 import org.tnt.multiplayer.IGameFactory;
 import org.tnt.multiplayer.IHub;
-import org.tnt.multiplayer.network.auth.AuthHandler;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -27,7 +26,6 @@ public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 	
 	@Inject private INetworkThread network; 
 	
-	@Inject AuthHandler authenticator;
 	@Inject IShutdownHook shutdownHook;
 	
 	final long startTime = System.currentTimeMillis();
