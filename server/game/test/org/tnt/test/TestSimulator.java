@@ -20,7 +20,7 @@ public class TestSimulator extends GameSimulator
 	}
 
 	@Override
-	public void step( long stepTime, long gameTime )
+	public void step( long stepTime, int gameTime )
 	{
 	}
 
