@@ -36,7 +36,7 @@ public interface IPlayerDriver
 	 */
 	void gameEnded( IGameResults results );
 
-	void playerInHub( Hub hub );
+	void playerInHub( IHub hub );
 
 	public void stop(MSClose reason);
 }

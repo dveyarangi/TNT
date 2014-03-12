@@ -5,10 +5,13 @@ package org.tnt.multiplayer.realtime;
 
 import java.util.concurrent.ExecutorService;
 
+import javax.inject.Inject;
+
 import org.tnt.game.GameSimulator;
 import org.tnt.game.IGamePlugin;
 import org.tnt.multiplayer.GameRoom;
 import org.tnt.multiplayer.IGameResults;
+import org.tnt.multiplayer.IHub;
 
 import com.spinn3r.log5j.Logger;
 
@@ -50,7 +53,7 @@ public class Arena
 	/**
 	 * Game lifecycle listener
 	 */	
-	private IArenaListener	listener;
+	@Inject private IHub hub;
 
 	public Arena(GameRoom room)
 	{
@@ -110,7 +113,7 @@ public class Arena
 
 	public void gameOver( IGameResults results )
 	{
-		listener.gameOver( this, results );
+		hub.gameOver( this, results );
 	}
 
 	/**
@@ -145,8 +148,6 @@ public class Arena
 
 	public IGamePlugin getPlugin() { return plugin; }
 
-	public void setListener( IArenaListener listener ) {this.listener = listener; }
-	
 	@Override
 	public String toString()
 	{

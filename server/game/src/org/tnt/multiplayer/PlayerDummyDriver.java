@@ -38,7 +38,7 @@ public class PlayerDummyDriver implements IPlayerDriver
 
 
 	@Override
-	public void playerInHub( Hub hub )
+	public void playerInHub( IHub hub )
 	{
 		// TODO Auto-generated method stub
 		

@@ -10,7 +10,7 @@ public class RatsSimulation extends GameSimulator
 	
 	private static final int CHARS_IN_RACE = 2;
 	
-	private final IGameResults results = null;
+	private IGameResults results = null;
 	
 	public RatsSimulation( Arena game )
 	{
@@ -19,16 +19,19 @@ public class RatsSimulation extends GameSimulator
 
 
 	@Override
-	public void step(long stepTime, long gameTime)
+	public void step(long stepTime, int gameTime)
 	{
-		int time = (int)gameTime;
 		
 		for(int pid = 0; pid < getAvatars().length; pid ++)
 		{
-			getAvatars()[pid].addUpdate( createCharacterUpdate( pid, time ) );
+			getAvatars()[pid].addUpdate( createCharacterUpdate( pid, gameTime ) );
 
 		}
+		
 		log.debug( "Hola from rats simulator!" );
+		
+		if(gameTime > 20)
+			results = new IGameResults() {};
 	}
 
 

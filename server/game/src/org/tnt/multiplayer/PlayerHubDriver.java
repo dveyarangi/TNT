@@ -9,7 +9,6 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.network.PlayerListener;
 import org.tnt.multiplayer.network.hub.HubProtocolHandler;
 import org.tnt.multiplayer.network.hub.MSClose;
 import org.tnt.multiplayer.network.hub.MSGameDetails;
@@ -24,7 +23,7 @@ import com.spinn3r.log5j.Logger;
  * 
  * Game client actions are represented by 
  * 
- * This class creates and swaps between admin and in-game protocol handlers
+ * This class creates and swaps between hub and in-game protocol handlers
  * 
  * @author Fima
  */
@@ -56,7 +55,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	/**
 	 * Multiplayer hub
 	 */
-	private final PlayerListener listener;
+	private final IHub hub;
 	
 	/**
 	 * Player logged into this channel
@@ -70,12 +69,12 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	 * @param player
 	 * @param hub
 	 */
-	public PlayerHubDriver ( Channel channel, ChannelPipeline pipeline, Player player, PlayerListener listener)
+	public PlayerHubDriver ( Channel channel, ChannelPipeline pipeline, Player player, IHub hub)
 	{
 		this.pipeline = pipeline;
 		this.channel = channel;
 		
-		this.listener = listener;
+		this.hub = hub;
 		
 		this.player = player;
 		
@@ -134,7 +133,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	 * @return
 	 */
 	@Override
-	public void playerInHub( Hub hub )    
+	public void playerInHub( IHub hub )    
 	{
 		// removing ingame protocol handler:
 		pipeline.remove( FRAME );
@@ -159,7 +158,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	@Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
-		listener.playerDisconnected( player );
+		hub.playerDisconnected( player );
 	}
 	
 	/**

@@ -8,8 +8,9 @@ import java.util.concurrent.Executors;
 import org.tnt.account.Player;
 import org.tnt.multiplayer.realtime.Arena;
 import org.tnt.multiplayer.realtime.Avatar;
-import org.tnt.multiplayer.realtime.IArenaListener;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -20,7 +21,8 @@ import com.spinn3r.log5j.Logger;
  * @author Fima
  *
  */
-public class HubThread extends Thread implements IArenaListener
+@Singleton
+public class HubThread implements IHubThread
 {
 	/**
 	 * A logger
@@ -28,7 +30,7 @@ public class HubThread extends Thread implements IArenaListener
 	private final Logger log = Logger.getLogger(this.getClass());
 
 	
-	private final Hub hub;
+	private IHub hub;
 	
 	/**
 	 * executor pool for game threads
@@ -41,22 +43,30 @@ public class HubThread extends Thread implements IArenaListener
 	private final Map <Player, Arena> runningGames = new IdentityHashMap<> ();
 	
 	private volatile boolean isAlive = false;
-
-	public HubThread (Hub hub)
+	
+	private final IPlayerConnections connections;
+	@Inject 
+	public HubThread (IPlayerConnections connections)
 	{
-		this.hub = hub;
+		this.connections = connections;
+		
 	}
 
-	/**
-	 * Starts multiplayer game from the specified room
-	 * @param gameroom
+	@Override
+	public void init()
+	{
+		log.debug( "Starting multiplayer hub thread..." );
+		new Thread(this, "tnt-hub") .start();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.tnt.multiplayer.IHubThread#startGame(org.tnt.multiplayer.GameRoom)
 	 */
+	@Override
 	public void startGame(GameRoom room )
 	{
 
 		Arena game = new Arena( room );
-
-		game.setListener( this );
 		
 		synchronized(runningGames)
 		{
@@ -66,7 +76,7 @@ public class HubThread extends Thread implements IArenaListener
 				Avatar avatar = game.getAvatars()[pid];
 				Player player = avatar.getPlayer();
 				
-				IPlayerDriver playerDriver = hub.getPlayer( player );
+				IPlayerDriver playerDriver = connections.getPlayerDriver( player );
 				avatar.gameCreated ( playerDriver.playerInGame( room, avatar ) );
 				
 					
@@ -101,6 +111,9 @@ public class HubThread extends Thread implements IArenaListener
 		isAlive = false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.tnt.multiplayer.IHubThread#gameOver(org.tnt.multiplayer.realtime.Arena, org.tnt.multiplayer.IGameResults)
+	 */
 	@Override
 	public void gameOver( Arena game, IGameResults results )
 	{
@@ -111,7 +124,7 @@ public class HubThread extends Thread implements IArenaListener
 			{
 				runningGames.remove( avatar.getPlayer() );
 				
-				IPlayerDriver driver = hub.getPlayer( avatar.getPlayer() );
+				IPlayerDriver driver = connections.getPlayerDriver( avatar.getPlayer() );
 				
 				driver.gameEnded( results );
 				
@@ -121,6 +134,10 @@ public class HubThread extends Thread implements IArenaListener
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.tnt.multiplayer.IHubThread#safeStop()
+	 */
+	@Override
 	public void safeStop()
 	{
 		this.isAlive = false;
@@ -130,4 +147,5 @@ public class HubThread extends Thread implements IArenaListener
 			game.stop();
 		}
 	}
+
 }

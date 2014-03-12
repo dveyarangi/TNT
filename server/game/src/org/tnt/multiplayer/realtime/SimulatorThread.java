@@ -1,8 +1,10 @@
 package org.tnt.multiplayer.realtime;
 
+import org.tnt.Calculator;
 import org.tnt.game.GameSimulator;
 import org.tnt.multiplayer.IGameResults;
 
+import com.google.inject.Inject;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -18,7 +20,7 @@ public class SimulatorThread implements Runnable
 	 * Current ingame time (starts at 0)
 	 */
 	private long startTime;
-	private long time;
+	private int time;
 	
 	private final GameSimulator simulator;
 	
@@ -27,13 +29,15 @@ public class SimulatorThread implements Runnable
 	////////////////////////////////////////////////////////////
 	
 	// thread service stuff
-	private static Logger log = Logger.getLogger( SimulatorThread.class );
+	private final Logger log = Logger.getLogger( this.getClass() );
 	
 	private boolean isAlive;
 	
 	private boolean isPaused = true;
 	
 	private static final long HEARTBEAT = 30; // ms
+	
+	@Inject private Calculator calculator; 
 	
 	////////////////////////////////////////////////////////////
 	
@@ -47,7 +51,7 @@ public class SimulatorThread implements Runnable
 	public void run()
 	{
 		
-		long updateTime = startTime = System.nanoTime();
+		long updateTime = startTime = calculator.getTime();
 		long now;
 		long stepTime;
 		
@@ -55,17 +59,15 @@ public class SimulatorThread implements Runnable
 		
 		isAlive = true;
 		
-		while( isAlive )
+		while( isAlive  )
 		{
 			// testing game end condition:
 			results = simulator.isOver();
 			if(results != null)
-			{
 				break;
-			}
 			
 			// registering step start time:
-			now = System.nanoTime();
+			now = calculator.getTime();
 			
 			if(!isPaused)
 			{

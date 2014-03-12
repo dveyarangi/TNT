@@ -12,10 +12,13 @@ import io.netty.util.ReferenceCountUtil;
 
 import java.nio.charset.Charset;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.tnt.account.IPlayerStore;
 import org.tnt.account.Player;
-import org.tnt.account.PlayerStore;
+import org.tnt.multiplayer.IHub;
 import org.tnt.multiplayer.PlayerHubDriver;
-import org.tnt.multiplayer.network.PlayerListener;
 
 import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;
@@ -31,6 +34,7 @@ import com.spinn3r.log5j.Logger;
  * @author fimar
  */
 @Sharable
+@Singleton
 public class AuthHandler extends ChannelInboundHandlerAdapter
 {
 	private final static Logger log = Logger.getLogger(AuthHandler.class);
@@ -38,12 +42,12 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Multiplayer hub
 	 */
-	private final PlayerListener listener;
+	@Inject private IHub hub;
 	
 	/**
 	 * Player store
 	 */
-	private final PlayerStore store;
+	@Inject private IPlayerStore store;
 	
 	
 	private static final Charset ENCODING = CharsetUtil.UTF_8;
@@ -55,12 +59,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 	
 	private final Gson gson;
 	
-	public AuthHandler(PlayerStore store, PlayerListener listener)
+	public AuthHandler()
 	{
-		this.store = store;
-		
-		this.listener = listener;
-		
 		this.gson = new Gson();
 	}
 	
@@ -114,9 +114,9 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     	// adding game handler with credentials info:
      	
    	
-    	PlayerHubDriver handler = new PlayerHubDriver( ctx.channel(), ctx.pipeline(), credentials, listener );
+    	PlayerHubDriver handler = new PlayerHubDriver( ctx.channel(), ctx.pipeline(), credentials, hub );
      	
-    	if(!listener.playerConnected( credentials, handler ))
+    	if(!hub.playerConnected( credentials, handler ))
     	{
        		log.warn( "Auth failed: player %s already logged in", credentials);
        		writeAuthResult( ctx, MSAuthResult.FAILED_ALREADY_LOGGED_IN);

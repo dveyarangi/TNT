@@ -1,7 +1,7 @@
 package org.tnt.multiplayer.network.hub;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.Hub;
+import org.tnt.multiplayer.IHub;
 
 /**
  * Game quit message from client.
@@ -20,7 +20,7 @@ public class MCQuit extends IClientMessage
 	 * Removing the player from his game room (if he is in any)
 	 */
 	@Override
-	void process( Player player, Hub hub )
+	void process( Player player, IHub hub )
 	{
 		hub.removeFromGameRoom( player );
 	}

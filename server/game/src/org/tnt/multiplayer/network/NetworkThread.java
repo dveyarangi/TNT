@@ -13,12 +13,17 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.tnt.INetworkThread;
 import org.tnt.config.NetworkConfig;
 import org.tnt.multiplayer.network.auth.AuthHandler;
 
 import com.spinn3r.log5j.Logger;
 
-public class NetworkThread extends Thread
+@Singleton
+public class NetworkThread implements INetworkThread
 {
 	private final Logger log = Logger.getLogger(this.getClass());
 	
@@ -28,9 +33,9 @@ public class NetworkThread extends Thread
 	
 	private ChannelFuture channel;
 	
+	@Inject
 	public NetworkThread(NetworkConfig config, final AuthHandler authenticator)
 	{
-		super("tnt-network");
 		this.config = config;
 		
 		ChannelInitializer <SocketChannel> channelInitializer = new ChannelInitializer<SocketChannel>() {
@@ -56,8 +61,6 @@ public class NetworkThread extends Thread
 		bootstrap.childHandler( channelInitializer );
 		bootstrap.option( ChannelOption.SO_BACKLOG, 128 );
 		bootstrap.childOption( ChannelOption.SO_KEEPALIVE, true );
-		
-		this.start();
 	}
 	
 	
@@ -87,12 +90,22 @@ public class NetworkThread extends Thread
 	}
 
 
+	@Override
 	public void safeStop()
 	{
 		
-		log.debug( "Shutting down server socket..." );
+		log.debug( "Shutting down networking thread..." );
 		bootstrap.group().shutdownGracefully();
+		log.debug( "Networking thread was shut down." );
 		
+	}
+
+
+	@Override
+	public void init()
+	{
+		log.debug("Starting networking thread...");
+		new Thread(this, "tnt-network").start();
 	}
 	
 }

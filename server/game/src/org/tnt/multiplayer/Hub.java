@@ -7,11 +7,13 @@ import java.util.Map;
 import org.tnt.account.Character;
 import org.tnt.account.Player;
 import org.tnt.game.IGamePlugin;
-import org.tnt.multiplayer.network.PlayerListener;
-import org.tnt.multiplayer.network.hub.MSClose;
+import org.tnt.multiplayer.network.hub.HubException;
+import org.tnt.multiplayer.realtime.Arena;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -26,18 +28,13 @@ import com.spinn3r.log5j.Logger;
  * @author Fima
  *
  */
-public class Hub implements PlayerListener
+@Singleton
+public class Hub implements IHub
 {
 	/**
 	 * A logger
 	 */
 	private final Logger log = Logger.getLogger(this.getClass());
-	
-	/**
-	 * List of players currently available in the hub.
-	 * Each player has a corresponding player driver, to receive or send messages to player controller
-	 */
-	private final Map <Player, IPlayerDriver> activePlayers = new HashMap <> ();
 	
 	/**
 	 * Queue of players looking for games
@@ -51,16 +48,28 @@ public class Hub implements PlayerListener
 	private final Multimap <String, GameRoom> pendingRoomsByType = HashMultimap.create();
 	private final Map <Player, GameRoom> pendingRoomsByPlayer = new HashMap <> ();
 	
+	private final IGameFactory factory;
+	
 	/**
 	 * Hub thread manages multiplayer game lifecycle
 	 */
-	private final HubThread thread;
+	private final IHubThread thread;
 	
-	public Hub()
+	private final IPlayerConnections connections;
+	
+	@Inject 
+	public Hub(IGameFactory factory, IHubThread thread, IPlayerConnections connections)
 	{
-		thread = new HubThread( this );
-		
-		thread.start();
+		this.factory = factory;
+		this.thread = thread;
+		this.connections = connections;
+
+	}
+	
+	@Override
+	public void init()
+	{
+		thread.init();
 	}
 
 
@@ -73,12 +82,12 @@ public class Hub implements PlayerListener
 	public boolean playerConnected( Player player, IPlayerDriver driver )
 	{
 		
-		if(activePlayers.containsKey( player ))
+		if(connections.hasPlayer( player ))
 		{
 			return false;
 		}
 		
-		activePlayers.put( player, driver );
+		connections.putPlayer( player, driver );
 		
 		log.debug("Registered hub player %s.", player);
 		// informing player driver that player is in hub now:
@@ -97,7 +106,7 @@ public class Hub implements PlayerListener
 	public void playerDisconnected( Player player )
 	{
 		// removing from list of active players:
-		activePlayers.remove( player );
+		connections.removePlayer( player );
 			
 		// removing from game rooms, if is in any:
 		removeFromGameRoom( player );
@@ -111,9 +120,10 @@ public class Hub implements PlayerListener
 	 * TODO: separate game request, match finding and game launch processes
 	 * @param player
 	 * @param characterId
-	 * @param gamePlugin
+	 * @param gameType
 	 */
-	public void addGameRequest(Player player, int characterId, IGamePlugin gamePlugin)
+	@Override
+	public void addGameRequest(Player player, int characterId, String gameType) throws HubException
 	{
 		
 		Character character = player.getCharacter( characterId );
@@ -123,6 +133,10 @@ public class Hub implements PlayerListener
 			return; // TODO: send error
 		}
 		
+		IGamePlugin plugin = factory.getPlugin( gameType );
+		if( plugin == null)
+			throw new HubException("Unknown game type [" + gameType + "].");
+		
 		// updating pending characters queue:
 //		queue.put( character, gameRequest.getGameType());
 		
@@ -130,7 +144,7 @@ public class Hub implements PlayerListener
 		// here should be
 		synchronized(pendingRoomsByType)
 		{
-			Collection <GameRoom> gameCandidates = pendingRoomsByType.get( gamePlugin.getName() );
+			Collection <GameRoom> gameCandidates = pendingRoomsByType.get( plugin.getName() );
 			GameRoom gameroom = null;
 			for(GameRoom aGame : gameCandidates)
 			{
@@ -144,9 +158,9 @@ public class Hub implements PlayerListener
 			if(gameroom == null)
 			{			
 	
-				gameroom = new GameRoom( gamePlugin, 2 );
+				gameroom = new GameRoom( plugin, 2 );
 				
-				pendingRoomsByType.put( gamePlugin.getName(), gameroom );
+				pendingRoomsByType.put( plugin.getName(), gameroom );
 				pendingRoomsByPlayer.put( player, gameroom );
 			}
 		
@@ -156,7 +170,7 @@ public class Hub implements PlayerListener
 			// sending game details message:
 			for(Character roomChar : gameroom.getCharacters())
 			{
-				IPlayerDriver driver = activePlayers.get( roomChar.getPlayer() );
+				IPlayerDriver driver = connections.getPlayerDriver( roomChar.getPlayer() );
 				
 				driver.gameRoomUpdated( gameroom );
 			}
@@ -177,6 +191,7 @@ public class Hub implements PlayerListener
 	}
 	
 	// TODO sync this with room start?
+	@Override
 	public void removeFromGameRoom( Player player )
 	{
 		synchronized(pendingRoomsByType)
@@ -196,23 +211,23 @@ public class Hub implements PlayerListener
 		}	
 	}
 
-
-	IPlayerDriver getPlayer( Player player )
+	@Override
+	public void safeStop()
 	{
-		return activePlayers.get( player );
+		log.debug( "Shutting down multiplayer hub thread..." );
+		
+		connections.safeStop();
+		thread.safeStop();
+
+		log.debug( "Multiplayer hub thread was shut down." );
 	}
 
 
-	public void safeStop()
+	@Override
+	public void gameOver( Arena arena, IGameResults results )
 	{
-		synchronized(pendingRoomsByType)
-		{
-			log.debug( "Disconnecting from pending clients (%d total)...", activePlayers.size() );
-			// dropping players from rooms:
-			for(IPlayerDriver driver : activePlayers.values())
-				driver.stop(MSClose.SERVER_SHUTDOWN);
-			
-		}
+		// TODO Auto-generated method stub
+		
 	}
 
 

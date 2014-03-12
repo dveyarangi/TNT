@@ -10,7 +10,7 @@ import io.netty.util.ReferenceCountUtil;
 import java.nio.charset.Charset;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.Hub;
+import org.tnt.multiplayer.IHub;
 import org.tnt.util.AbstractElementAdapter;
 
 import com.google.gson.Gson;
@@ -35,7 +35,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Multiplayer service
 	 */
-	private final Hub	hub;
+	private final IHub	hub;
 
 	/**
 	 * Json encoder/decoder
@@ -65,7 +65,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	 */
 	private final Channel					channel;
 
-	public HubProtocolHandler( Channel channel, final Hub hub, Player player )
+	public HubProtocolHandler( Channel channel, final IHub hub, Player player )
 	{
 
 		this.hub = hub;

@@ -1,7 +1,7 @@
 package org.tnt.multiplayer.network.hub;
 
 import org.tnt.account.Player;
-import org.tnt.multiplayer.Hub;
+import org.tnt.multiplayer.IHub;
 
 /**
  * Abstract client message.
@@ -25,7 +25,7 @@ public abstract class IClientMessage
 	 * @param player
 	 * @param orchestrator
 	 */
-	abstract void process( Player player, Hub orchestrator ) throws HubException;
+	abstract void process( Player player, IHub hub ) throws HubException;
 
 	
 	@Override

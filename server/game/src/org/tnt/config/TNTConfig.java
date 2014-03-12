@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;
 
 /**
- * Server configuration provider
+ * Server configuration provider.
  * 
  * @author Fima
  */
@@ -17,13 +17,13 @@ public class TNTConfig
 {
 	private static final String DEFAULT_CONFIG_FILE = "tnt.conf";
 	
-	private static Logger log = Logger.getLogger( TNTConfig.class );
+	private final Logger log = Logger.getLogger( this.getClass() );
 
 	/**
 	 * Loads server configuration.
 	 * @return
 	 */
-	public static TNTConfig load()
+	public TNTConfig load()
 	{
 		InputStream stream = null;
 		try 

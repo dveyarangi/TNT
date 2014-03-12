@@ -1,10 +1,12 @@
 package org.tnt.game;
 
+import org.tnt.ICalculator;
 import org.tnt.multiplayer.IGameResults;
 import org.tnt.multiplayer.realtime.Arena;
 import org.tnt.multiplayer.realtime.Avatar;
 import org.tnt.multiplayer.realtime.IAvatarUpdate;
 
+import com.google.inject.Inject;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -23,6 +25,8 @@ public abstract class GameSimulator
 	
 	protected final Logger log = Logger.getLogger(this.getClass());;
 	
+	@Inject private ICalculator calculator;
+	
 	public GameSimulator (Arena game)
 	{
 		this.game = game;
@@ -40,7 +44,7 @@ public abstract class GameSimulator
 	 * @param time2 
 	 * @return false is the game is over
 	 */
-	public abstract void step(long stepTime, long gameTime);
+	public abstract void step(long stepTime, int gameTime);
 	
 	/**
 	 * Destroys the simulator

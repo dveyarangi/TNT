@@ -5,11 +5,16 @@ import java.util.Map;
 
 
 
-public class PlayerStore
+public class PlayerStore implements IPlayerStore
 {
-	private Map <Long, Player> players = new HashMap <Long, Player> ();
+	private final Map <Long, Player> players = new HashMap <Long, Player> ();
 		
 	public PlayerStore()
+	{
+	}
+
+	@Override
+	public void init()
 	{
 		Player player1 = new Player(1);
 		player1.getCharacters().add( new Character( 0, player1 ) );

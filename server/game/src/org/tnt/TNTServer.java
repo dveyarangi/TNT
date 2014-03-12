@@ -1,73 +1,70 @@
 package org.tnt;
 
-import org.tnt.account.PlayerStore;
+import org.tnt.account.IPlayerStore;
 import org.tnt.config.TNTConfig;
 import org.tnt.debug.Debug;
-import org.tnt.game.GameFactory;
-import org.tnt.multiplayer.Hub;
-import org.tnt.multiplayer.network.NetworkThread;
+import org.tnt.multiplayer.IGameFactory;
+import org.tnt.multiplayer.IHub;
 import org.tnt.multiplayer.network.auth.AuthHandler;
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
-
-public class TNTServer 
+@Singleton
+public class TNTServer implements ITNTServer
 {
 	private final Logger log = Logger.getLogger(this.getClass());
 
-	private TNTConfig	config;
+	@Inject private TNTConfig	config;
 	
-	private PlayerStore store;
+	@Inject private IGameFactory factory;
 	
-	private Hub hub;
+	@Inject private IPlayerStore store;
 	
-	private NetworkThread network; 
-
+	@Inject private IHub hub;
 	
-	public TNTServer() throws Exception
+	@Inject private INetworkThread network; 
+	
+	@Inject AuthHandler authenticator;
+	
+	final long startTime = System.currentTimeMillis();
+	
+	@Override
+	public void init()
 	{
 		log.info( "Starting server..." );
 		
-		long startTime = System.currentTimeMillis();
-
-		init();
 		
-		Thread.sleep( 1000 );
-		
-		log.info( "Started in " + (System.currentTimeMillis() - startTime) + " ms." );
-	}
-	
-	public void init()
-	{
+//		Thread.sleep( 1000 );
 
+		try {
 		// loading server configuration:
-		config = TNTConfig.load();
+		config.load();
 		
 		// loading server resources:
-		GameFactory.init();
+		factory.init();
 		
-		// storage of player account, profile and characters
-		this.store = new PlayerStore();
+		//calculator.init();
 		
-		// loading multiplayer hub:
-		// manages connected players and game rooms:
-		this.hub = new Hub();
+		store.init();
 		
+		hub.init();
 		
-		AuthHandler authenticator = new AuthHandler( store, hub );
-		// starting network service:
-		this.network = new NetworkThread( config.getServerConfig(), authenticator );
+		network.init();
 		
 		if(true)
 			Debug.init();
 		
-		Runtime.getRuntime().addShutdownHook( new Thread("tnt-shutdown") {
-			@Override
-			public void run()
-			{
-				hub.safeStop();
-				network.safeStop();
-			}
-		});
+		}
+		catch(Exception e)
+		{
+			log.fatal( "Failed to start server." );
+		}
+		
+		Runtime.getRuntime().addShutdownHook( new ShutdownHook() );
+		log.info( "Server started in " + (System.currentTimeMillis() - startTime) + " ms." );
 	}
 
 
@@ -76,7 +73,11 @@ public class TNTServer
 	{
 		Thread.currentThread().setName( "tnt-server" );
 		
-		TNTServer server = new TNTServer();
+		Injector injector = Guice.createInjector(new TNTModule());
+		
+		ITNTServer server = injector.getInstance( ITNTServer.class );
+		
+		server.init();
 		
 	/*	TNTConsole console = new TNTConsole( server );
 		Thread consoleThread = new Thread( console, "tnt-console" );
@@ -84,6 +85,19 @@ public class TNTServer
 		consoleThread.start();*/
 	}
 
-	public PlayerStore getPlayerStore() { return store;  }
-	public Hub getHub() { return hub; }
+	
+	private class ShutdownHook extends Thread
+	{
+		ShutdownHook() 
+		{
+			super ("tnt-shutdown");
+		}
+		@Override
+		public void run()
+		{
+			hub.safeStop();
+			network.safeStop();
+			log.info( "Started in (uptime " + (System.currentTimeMillis() - startTime) + " ms." );
+		}
+	}
 }
