@@ -1,8 +1,11 @@
 package org.tnt.config;
 
+import javax.inject.Singleton;
+
+@Singleton
 public class NetworkConfig
 {
-	private int port = 4242;
+	private final int port = 4242;
 	
 	public int getPort() { return port; }
 }

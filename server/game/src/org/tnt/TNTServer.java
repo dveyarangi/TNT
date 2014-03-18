@@ -11,6 +11,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
+
 @Singleton
 public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 {
@@ -44,29 +45,28 @@ public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 //		Thread.sleep( 1000 );
 
 		try {
-		// loading server configuration:
-		config.load();
-		
-		// loading server resources:
-		factory.init();
-		
-		//calculator.init();
-		
-		store.init();
-		
-		hub.init();
-		
-		network.init();
-		
-		if(true)
-			Debug.init();
-		
+			// loading server configuration:
+			config.load();
+			
+			// loading server resources:
+			factory.init();
+			
+			//calculator.init();
+			
+			store.init();
+			
+			hub.init();
+			
+			network.init();
+			
+			if(true)
+				Debug.init();
+			
 		}
 		catch(Exception e)
 		{
 			log.fatal( "Failed to start server." );
-			fail();
-			return;
+			fail(e);
 		}
 		
 		Runtime.getRuntime().addShutdownHook( (Thread)shutdownHook );
@@ -99,17 +99,19 @@ public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 			hub.safeStop();
 			network.safeStop();
 			log.info( "Server decomposed (uptime " + (System.currentTimeMillis() - startTime)/1000/60 + " min.)" );
-			System.exit( 1 );
 		}
 		@Override
-		public void fail()
+		public void fail(Exception e)
 		{
+			log.fatal( "Server crushed.", e );
 			this.start();
+			System.exit( 1 );
 		}
 		@Override
 		public void shutdown()
 		{
 			this.start();
+			System.exit( 1 );
 		}	
 
 }

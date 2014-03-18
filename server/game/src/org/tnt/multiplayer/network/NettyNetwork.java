@@ -77,8 +77,6 @@ public class NettyNetwork implements INetworkThread
 		bootstrap.childOption( ChannelOption.SO_KEEPALIVE, true );
 		
 		new Thread(this, "tnt-network").start();
-		
-//		Thread.sleep( 500 );
 	}
 	
 	@Override
@@ -89,7 +87,7 @@ public class NettyNetwork implements INetworkThread
 		{
 			// Bind and start to accept incoming connections.
 			channel = bootstrap.bind( port ).sync();
-			log.info( "Listening on port %d...", port );
+			log.info( "Ready to receive connections on port %d.", port );
 
 			// Wait until the server socket is closed.
 			// In this example, this does not happen, but you can do that to
@@ -100,7 +98,7 @@ public class NettyNetwork implements INetworkThread
 		catch(Exception e)
 		{
 			log.fatal( "Failed to bind server channel on port %d: %s", port, e.getMessage());
-			shutdownHook.fail();
+			shutdownHook.fail( e );
 			return;
 		}
 		

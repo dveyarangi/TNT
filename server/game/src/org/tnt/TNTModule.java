@@ -22,16 +22,33 @@ public class TNTModule extends AbstractModule
 	@Override
 	protected void configure()
 	{
+		// server main class
 		bind( ITNTServer.class ).           to( TNTServer.class );
-		bind( IHub.class ).                 to( Hub.class )                 .in( Singleton.class);
-		bind( IHubThread.class ).           to( HubThread.class )           .in( Singleton.class);
-		bind( ICalculator.class ).          to( Calculator.class )          .in( Singleton.class);
-		bind( IGameFactory.class ).         to( GameFactory.class )         .in( Singleton.class);
-		bind( IPlayerStore.class ).         to( PlayerStore.class )         .in( Singleton.class);
-		bind( INetworkThread.class )       .to( NettyNetwork.class )        .in( Singleton.class);
-		bind( IPlayerConnections.class )   .to( PlayerConnections.class )   .in( Singleton.class);
-		bind( IAuthenticator.class )       .to( AuthHandler.class )         .in( Singleton.class);
+		// server shutdown hook
 		bind( IShutdownHook.class )        .to( TNTServer.class )           .in( Singleton.class);
+		
+		// multiplayer hub, manages player non-ingame actions
+		bind( IHub.class ).                 to( Hub.class )                 .in( Singleton.class);
+		// hub thread
+		bind( IHubThread.class ).           to( HubThread.class )           .in( Singleton.class);
+		
+		// utility calculator
+		bind( ICalculator.class ).          to( Calculator.class )          .in( Singleton.class);
+		
+		// game resources provider
+		bind( IGameFactory.class ).         to( GameFactory.class )         .in( Singleton.class);
+		
+		// player data store
+		bind( IPlayerStore.class ).         to( PlayerStore.class )         .in( Singleton.class);
+		
+		// server networking thread
+		bind( INetworkThread.class )       .to( NettyNetwork.class )        .in( Singleton.class);
+		
+		// connected players repository
+		bind( IPlayerConnections.class )   .to( PlayerConnections.class )   .in( Singleton.class);
+		
+		// player authentication protocol
+		bind( IAuthenticator.class )       .to( AuthHandler.class )         .in( Singleton.class);
 //		bind( IHub.class ).      to( Hub.class );
 //		bind( IHub.class ).      to( Hub.class );
 //		bind( IHub.class ).      to( Hub.class );

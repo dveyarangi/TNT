@@ -3,7 +3,7 @@ package org.tnt;
 public interface IShutdownHook extends Runnable
 {
 
-	void fail();
+	void fail(Exception e);
 
 	void shutdown();
 

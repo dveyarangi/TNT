@@ -3,9 +3,13 @@ package org.tnt.config;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.inject.Singleton;
+
 import yarangi.files.FileLoader;
 
 import com.google.gson.Gson;
+import com.google.inject.Provider;
+import com.google.inject.Provides;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -13,16 +17,23 @@ import com.spinn3r.log5j.Logger;
  * 
  * @author Fima
  */
-public class TNTConfig
+@Singleton
+public class TNTConfig implements Provider <TNTConfig>
 {
 	private static final String DEFAULT_CONFIG_FILE = "tnt.conf";
 	
 	private final Logger log = Logger.getLogger( this.getClass() );
+	
+	public TNTConfig()
+	{
+		load();
+	}
 
 	/**
 	 * Loads server configuration.
 	 * @return
 	 */
+	@Provides
 	public TNTConfig load()
 	{
 		InputStream stream = null;
@@ -59,5 +70,12 @@ public class TNTConfig
 	
 	private final NetworkConfig server = new NetworkConfig();
 	
+	@Provides
 	public NetworkConfig getServerConfig() { return server; }
+
+	@Override
+	public TNTConfig get()
+	{
+		return load();
+	}
 }	
