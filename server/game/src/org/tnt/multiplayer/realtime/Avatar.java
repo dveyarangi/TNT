@@ -8,7 +8,7 @@ import org.tnt.account.Character;
 /**
  * Ingame representation of {@link Arena} participant.
  * 
- * 
+ * Manages messages queues from character driver to game simulation and vice versa.
  * 
  * @author Fima
  *
@@ -30,8 +30,14 @@ public class Avatar extends Character
 	 */
 	private final Queue <IAvatarUpdate> updates;
 	
+	/**
+	 * Turns true once the avatar driver had acknowledged game start.
+	 */
 	private boolean ingame;
 
+	/**
+	 * Game arena this player avatar is appears in.
+	 */
 	private final Arena arena;
 	
 	public Avatar( Arena arena, Character character )
