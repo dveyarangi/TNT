@@ -1,7 +1,8 @@
-package org.tnt.multiplayer.realtime;
+package org.tnt.multiplayer;
 
-import org.tnt.game.GameSimulator;
-import org.tnt.multiplayer.network.realtime.IServerPacket;
+import org.tnt.network.realtime.IServerPacket;
+import org.tnt.plugins.GameSimulator;
+
 
 /**
  * Update of {@link Avatar} state from {@link GameSimulator}.

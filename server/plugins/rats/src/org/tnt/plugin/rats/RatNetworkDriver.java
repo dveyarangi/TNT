@@ -1,16 +1,16 @@
-package org.tnt.game.rats;
+package org.tnt.plugin.rats;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
-import org.tnt.multiplayer.network.realtime.IngameProtocolHandler;
-import org.tnt.multiplayer.realtime.Avatar;
-import org.tnt.multiplayer.realtime.IAvatarAction;
+import org.tnt.multiplayer.IAvatar;
+import org.tnt.multiplayer.IAvatarAction;
+import org.tnt.network.realtime.AvatarNetworker;
 
-public class RatsProtocolHandler extends IngameProtocolHandler
+public class RatNetworkDriver extends AvatarNetworker
 {
 
-	public RatsProtocolHandler( Channel channel, Avatar avatar )
+	public RatNetworkDriver( Channel channel, IAvatar avatar )
 	{
 		super( channel, avatar );
 	}

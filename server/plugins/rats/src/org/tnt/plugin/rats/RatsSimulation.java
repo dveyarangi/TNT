@@ -1,9 +1,11 @@
-package org.tnt.game.rats;
+package org.tnt.plugin.rats;
 
-import org.tnt.game.GameSimulator;
-import org.tnt.multiplayer.IGameResults;
-import org.tnt.multiplayer.realtime.Arena;
-import org.tnt.multiplayer.realtime.IAvatarUpdate;
+import org.tnt.multiplayer.IArena;
+import org.tnt.multiplayer.IAvatarUpdate;
+import org.tnt.plugins.GameSimulator;
+import org.tnt.plugins.IGameResults;
+
+
 
 public class RatsSimulation extends GameSimulator
 {
@@ -12,7 +14,7 @@ public class RatsSimulation extends GameSimulator
 	
 	private IGameResults results = null;
 	
-	public RatsSimulation( Arena game )
+	public RatsSimulation( IArena game )
 	{
 		super( game );
 	}
@@ -24,7 +26,7 @@ public class RatsSimulation extends GameSimulator
 		
 		for(int pid = 0; pid < getAvatars().length; pid ++)
 		{
-			getAvatars()[pid].addUpdate( createCharacterUpdate( pid, gameTime ) );
+			getAvatars()[pid].putUpdate( createCharacterUpdate( pid, gameTime ) );
 
 		}
 		

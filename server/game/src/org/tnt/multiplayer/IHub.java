@@ -3,6 +3,7 @@ package org.tnt.multiplayer;
 import org.tnt.account.Player;
 import org.tnt.multiplayer.network.hub.HubException;
 import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.plugins.IGameResults;
 
 public interface IHub
 {

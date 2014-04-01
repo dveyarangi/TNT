@@ -1,6 +1,6 @@
 package org.tnt.multiplayer;
 
-import org.tnt.game.IGamePlugin;
+import org.tnt.plugins.IGamePlugin;
 
 public interface IGameFactory
 {

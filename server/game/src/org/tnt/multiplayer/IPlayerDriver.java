@@ -2,7 +2,7 @@ package org.tnt.multiplayer;
 
 import org.tnt.multiplayer.network.hub.MSClose;
 import org.tnt.multiplayer.realtime.Avatar;
-import org.tnt.multiplayer.realtime.ICharacterDriver;
+import org.tnt.plugins.IGameResults;
 
 
 
@@ -29,7 +29,7 @@ public interface IPlayerDriver
 	 * @param pid
 	 * @return Handle to control behavior of in-game character this player controls.
 	 */
-	public ICharacterDriver playerInGame( GameRoom room, Avatar avatar );
+	public IAvatarDriver playerInGame( GameRoom room, Avatar avatar );
 	/**
 	 * Invoked when game ends.
 	 * @param results

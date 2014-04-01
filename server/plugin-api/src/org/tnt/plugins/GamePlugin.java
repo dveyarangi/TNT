@@ -1,4 +1,4 @@
-package org.tnt.game;
+package org.tnt.plugins;
 
 public @interface GamePlugin {
 

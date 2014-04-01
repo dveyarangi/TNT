@@ -1,4 +1,4 @@
-package org.tnt.game.rats;
+package org.tnt.plugin.rats;
 
 public enum CharacterAction {
 	START,

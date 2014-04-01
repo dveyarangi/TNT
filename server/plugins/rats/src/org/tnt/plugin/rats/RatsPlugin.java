@@ -1,4 +1,4 @@
-package org.tnt.test;
+package org.tnt.plugin.rats;
 
 import io.netty.channel.Channel;
 
@@ -10,35 +10,29 @@ import org.tnt.plugins.IGamePlugin;
 import org.tnt.plugins.IGameSimulator;
 
 @GamePlugin
-public class TestGame implements IGamePlugin
+public class RatsPlugin implements IGamePlugin
 {
+	
+	public static final String NAME = "rats";
 
 	@Override
-	public String getName()
-	{
-		return "tnt-test-game";
-	}
-
+	public String getName() { return NAME; }
 	@Override
 	public void init()
 	{
 		// TODO Auto-generated method stub
 		
 	}
-
 	@Override
 	public IGameSimulator createSimulation( IArena game )
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new RatsSimulation( game );	
 	}
-
 
 	@Override
 	public IAvatarNetworker createAvatarNetworker( Channel channel, IAvatar avatar )
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new RatNetworkDriver( channel, avatar );
 	}
 
 }

@@ -6,9 +6,9 @@ import java.util.Map;
 import javax.inject.Singleton;
 
 import org.reflections.Reflections;
-import org.tnt.game.GamePlugin;
-import org.tnt.game.IGamePlugin;
 import org.tnt.multiplayer.IGameFactory;
+import org.tnt.plugins.GamePlugin;
+import org.tnt.plugins.IGamePlugin;
 
 import yarangi.java.ReflectionUtil;
 
@@ -50,5 +50,6 @@ public class GameFactory implements IGameFactory
 	{
 		games.put( plugin.getName(), plugin );
 	}
+
 
 }

@@ -1,12 +1,10 @@
-package org.tnt.game;
+package org.tnt.plugins;
 
 import org.tnt.ICalculator;
-import org.tnt.multiplayer.IGameResults;
-import org.tnt.multiplayer.realtime.Arena;
-import org.tnt.multiplayer.realtime.Avatar;
-import org.tnt.multiplayer.realtime.IAvatarUpdate;
+import org.tnt.multiplayer.IArena;
+import org.tnt.multiplayer.IAvatar;
+import org.tnt.multiplayer.IAvatarUpdate;
 
-import com.google.inject.Inject;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -18,16 +16,16 @@ import com.spinn3r.log5j.Logger;
  * @author Fima
  *
  */
-public abstract class GameSimulator
+public abstract class GameSimulator implements IGameSimulator
 {
 	
-	private final Arena game;
+	private final IArena game;
 	
-	protected final Logger log = Logger.getLogger(this.getClass());;
+	protected final Logger log = Logger.getLogger(this.getClass());
 	
-	@Inject private ICalculator calculator;
+	private ICalculator calculator;
 	
-	public GameSimulator (Arena game)
+	public GameSimulator (IArena game)
 	{
 		this.game = game;
 	}
@@ -44,22 +42,26 @@ public abstract class GameSimulator
 	 * @param time2 
 	 * @return false is the game is over
 	 */
+	@Override
 	public abstract void step(long stepTime, int gameTime);
 	
 	/**
 	 * Destroys the simulator
 	 */
+	@Override
 	public abstract void destroy();
 
 
+	@Override
 	public abstract IAvatarUpdate getStartingUpdate( int pid );
 	
-	protected Avatar [] getAvatars() { return game.getAvatars(); }
+	protected IAvatar [] getAvatars() { return game.getAvatars(); }
  	
 	/**
 	 * Returns results if the simulation is over
 	 * @return null if the simulation is in progress, results otherwise
 	 */
+	@Override
 	public abstract IGameResults isOver();
 
 

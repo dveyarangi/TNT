@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 
 import org.tnt.account.Player;
 import org.tnt.multiplayer.IHub;
+import org.tnt.network.hub.IServerMessage;
 import org.tnt.util.AbstractElementAdapter;
 
 import com.google.gson.Gson;

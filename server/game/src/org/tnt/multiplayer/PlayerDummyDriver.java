@@ -2,7 +2,7 @@ package org.tnt.multiplayer;
 
 import org.tnt.multiplayer.network.hub.MSClose;
 import org.tnt.multiplayer.realtime.Avatar;
-import org.tnt.multiplayer.realtime.ICharacterDriver;
+import org.tnt.plugins.IGameResults;
 
 
 
@@ -30,7 +30,7 @@ public class PlayerDummyDriver implements IPlayerDriver
 
 
 	@Override
-	public ICharacterDriver playerInGame( GameRoom room, Avatar avatar )
+	public IAvatarDriver playerInGame( GameRoom room, Avatar avatar )
 	{
 		// TODO Auto-generated method stub
 		return null;

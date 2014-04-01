@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import org.tnt.account.Player;
 import org.tnt.multiplayer.realtime.Arena;
 import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.plugins.IGameResults;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

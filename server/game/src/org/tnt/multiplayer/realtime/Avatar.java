@@ -4,6 +4,10 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.tnt.account.Character;
+import org.tnt.multiplayer.IAvatar;
+import org.tnt.multiplayer.IAvatarAction;
+import org.tnt.multiplayer.IAvatarDriver;
+import org.tnt.multiplayer.IAvatarUpdate;
 
 /**
  * Ingame representation of {@link Arena} participant.
@@ -13,12 +17,12 @@ import org.tnt.account.Character;
  * @author Fima
  *
  */
-public class Avatar extends Character
+public class Avatar extends Character implements IAvatar
 {
 	/**
 	 * Avatar controller, provides avatar actions.
 	 */
-	private ICharacterDriver driver;
+	private IAvatarDriver driver;
 	
 	/**
 	 * Queue of actions received from avatar driver.
@@ -53,10 +57,12 @@ public class Avatar extends Character
 		
 	}
 
-	public void gameCreated( ICharacterDriver driver )
+	public void gameCreated( IAvatarDriver driver )
 	{
 		this.driver = driver;
 	}
+	
+	@Override
 	public void gameAcknowledged()
 	{
 		ingame = true;
@@ -77,9 +83,16 @@ public class Avatar extends Character
 
 
 
-	public void putActions( IAvatarAction action )
+	@Override
+	public void putAction( IAvatarAction action )
 	{
 		actions.add( action );
+	}
+
+	@Override
+	public void putUpdate( IAvatarUpdate update )
+	{
+		updates.add( update );
 	}
 	
 	void flushUpdates()
@@ -90,11 +103,6 @@ public class Avatar extends Character
 		}
 	}
 
-
-	public void addUpdate( IAvatarUpdate update )
-	{
-		updates.add( update );
-	}
 
 
 }

@@ -1,8 +1,8 @@
 package org.tnt.multiplayer.realtime;
 
 import org.tnt.Calculator;
-import org.tnt.game.GameSimulator;
-import org.tnt.multiplayer.IGameResults;
+import org.tnt.plugins.IGameResults;
+import org.tnt.plugins.IGameSimulator;
 
 import com.google.inject.Inject;
 import com.spinn3r.log5j.Logger;
@@ -22,7 +22,7 @@ public class SimulatorThread implements Runnable
 	private long startTime;
 	private int time;
 	
-	private final GameSimulator simulator;
+	private final IGameSimulator simulator;
 	
 	private final Arena multiplayer;
 	
@@ -41,7 +41,7 @@ public class SimulatorThread implements Runnable
 	
 	////////////////////////////////////////////////////////////
 	
-	public SimulatorThread(Arena multiplayer, GameSimulator simulator)
+	public SimulatorThread(Arena multiplayer, IGameSimulator simulator)
 	{
 		this.simulator = simulator;
 		this.multiplayer = multiplayer;
@@ -127,5 +127,5 @@ public class SimulatorThread implements Runnable
 	@Override
 	public String toString() { return "simulator-" + multiplayer.toString(); }
 
-	public GameSimulator getSimulator() { return simulator; }
+	public IGameSimulator getSimulator() { return simulator; }
 }

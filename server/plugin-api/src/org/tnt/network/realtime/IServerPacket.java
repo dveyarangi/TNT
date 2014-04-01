@@ -1,4 +1,6 @@
-package org.tnt.multiplayer.network.realtime;
+package org.tnt.network.realtime;
+
+import org.tnt.multiplayer.IAvatarUpdate;
 
 import io.netty.buffer.ByteBuf;
 
@@ -7,7 +9,7 @@ import io.netty.buffer.ByteBuf;
  * @author fimar
  *
  */
-public interface IServerPacket 
+public interface IServerPacket extends IAvatarUpdate
 {
 	/**
 	 * Serializes this message into the provided buffer.

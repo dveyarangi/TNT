@@ -7,11 +7,12 @@ import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 
-import org.tnt.game.GameSimulator;
-import org.tnt.game.IGamePlugin;
 import org.tnt.multiplayer.GameRoom;
-import org.tnt.multiplayer.IGameResults;
+import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IHub;
+import org.tnt.plugins.IGamePlugin;
+import org.tnt.plugins.IGameResults;
+import org.tnt.plugins.IGameSimulator;
 
 import com.spinn3r.log5j.Logger;
 
@@ -21,7 +22,7 @@ import com.spinn3r.log5j.Logger;
  * 
  * Keeps game state and configuration.
  */
-public class Arena
+public class Arena implements IArena
 {
 	private final Logger log = Logger.getLogger( Arena.class );
 	
@@ -36,7 +37,7 @@ public class Arena
 	/**
 	 * Game simulator, encapsulates game logic and generates updates for game clients.
 	 */
-	private final GameSimulator simulator;
+	private final IGameSimulator simulator;
 	
 	/**
 	 * Simulator thread, executes the simulator step by step
@@ -109,6 +110,7 @@ public class Arena
 		}
 	}
 	
+	@Override
 	public Avatar [] getAvatars() { return avatars; }
 
 	public void gameOver( IGameResults results )
@@ -135,7 +137,7 @@ public class Arena
 		for(int pid = 0; pid < avatars.length; pid ++)
 		{
 			// adding the initial character state update:
-			avatars[pid].addUpdate( simulator.getStartingUpdate( pid ) );
+			avatars[pid].putUpdate( simulator.getStartingUpdate( pid ) );
 		}
 			
 		dispatcherThread.togglePause();

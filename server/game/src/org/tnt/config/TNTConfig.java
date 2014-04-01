@@ -37,7 +37,7 @@ public class TNTConfig implements Provider <TNTConfig>
 	public TNTConfig load()
 	{
 		InputStream stream = null;
-		try 
+		try  
 		{
 			stream = TNTConfig.class.getClassLoader().getResourceAsStream( DEFAULT_CONFIG_FILE );
 			

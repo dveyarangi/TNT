@@ -6,9 +6,10 @@ import java.util.Map;
 
 import org.tnt.account.Character;
 import org.tnt.account.Player;
-import org.tnt.game.IGamePlugin;
 import org.tnt.multiplayer.network.hub.HubException;
 import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.plugins.IGamePlugin;
+import org.tnt.plugins.IGameResults;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

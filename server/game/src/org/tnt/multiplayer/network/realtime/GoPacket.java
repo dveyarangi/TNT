@@ -3,7 +3,8 @@ package org.tnt.multiplayer.network.realtime;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.CharsetUtil;
 
-import org.tnt.multiplayer.realtime.IAvatarUpdate;
+import org.tnt.multiplayer.IAvatarUpdate;
+import org.tnt.network.realtime.IServerPacket;
 
 /**
  * This packet is sent by server to order all clients to start game simulation.

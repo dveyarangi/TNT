@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.tnt.account.Character;
 import org.tnt.multiplayer.GameRoom;
+import org.tnt.network.hub.IServerMessage;
 
 /**
  * This message is sent by server to inform client about his game room.

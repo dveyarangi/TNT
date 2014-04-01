@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.network.realtime;
+package org.tnt.network.realtime;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -6,27 +6,26 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import org.tnt.multiplayer.realtime.Avatar;
-import org.tnt.multiplayer.realtime.IAvatarAction;
-import org.tnt.multiplayer.realtime.ICharacterDriver;
-import org.tnt.multiplayer.realtime.IAvatarUpdate;
+import org.tnt.multiplayer.IAvatar;
+import org.tnt.multiplayer.IAvatarAction;
+import org.tnt.multiplayer.IAvatarUpdate;
 
 /**
- * This class manages in-game fast protocol for a single client.
+ * This helper class manages in-game communication for a single client.
+ * 
+ * Game plugins may inherit
+ * 
+ * The class commu
  * @author fimar
  *
  */
-public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter implements ICharacterDriver
+public abstract class AvatarNetworker extends ChannelInboundHandlerAdapter implements IAvatarNetworker
 {
-	/**
-	 * Handler's name for comm channel pipeline.
-	 */
-	public static final String	NAME	= "ingame";
 	
 	/**
 	 * Multiplayer  this handler serves.
 	 */
-	private final Avatar avatar;
+	private final IAvatar avatar;
 
 	
 	/**
@@ -49,7 +48,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 	 */
 	private final ByteBuf outBuffer;
 	
-	public IngameProtocolHandler(Channel channel, Avatar avatar)
+	public AvatarNetworker(Channel channel, IAvatar avatar)
 	{
 		this.channel = channel;
 		
@@ -88,7 +87,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
 
     	case RUNNING:	
     		// TODO: decouple simulator and network threads?
-    		avatar.putActions( parseClientUpdate( buffer ) );
+    		avatar.putAction( parseClientUpdate( buffer ) );
     		break;
     	case OVER:
     		// TODO:
@@ -102,7 +101,7 @@ public abstract class IngameProtocolHandler extends ChannelInboundHandlerAdapter
      * @param update
      */
 	@Override
-	public void setStarted( IAvatarUpdate update) 
+	public void setStarted( IAvatarUpdate update ) 
     {
     	state = GameState.RUNNING;
     	update( update );

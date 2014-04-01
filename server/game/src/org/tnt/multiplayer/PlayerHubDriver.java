@@ -13,9 +13,10 @@ import org.tnt.multiplayer.network.hub.HubProtocolHandler;
 import org.tnt.multiplayer.network.hub.MSClose;
 import org.tnt.multiplayer.network.hub.MSGameDetails;
 import org.tnt.multiplayer.network.hub.MSGo;
-import org.tnt.multiplayer.network.realtime.IngameProtocolHandler;
 import org.tnt.multiplayer.realtime.Avatar;
-import org.tnt.multiplayer.realtime.ICharacterDriver;
+import org.tnt.network.realtime.AvatarNetworker;
+import org.tnt.network.realtime.IAvatarNetworker;
+import org.tnt.plugins.IGameResults;
 
 import com.spinn3r.log5j.Logger;
 /**
@@ -96,7 +97,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	 * @return Handle to control behavior of in-game character this player controls.
 	 */
 	@Override
-	public ICharacterDriver playerInGame(GameRoom room, Avatar avatar)
+	public IAvatarDriver playerInGame(GameRoom room, Avatar avatar)
 	{
 		// write game start to game room participant
 		hubHandler.write( MSGo.GO );
@@ -110,10 +111,10 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 		
 		
 		// registering ingame protocol handler:
-		IngameProtocolHandler handler = room.getPlugin().createNetworkCharacterDriver( channel, avatar );
+		IAvatarNetworker handler = room.getPlugin().createAvatarNetworker( channel, avatar );
 		
 		activeHandler = handler;
-		pipeline.addLast( IngameProtocolHandler.NAME, activeHandler );
+		pipeline.addLast( IAvatarNetworker.NAME, activeHandler );
 
 		return handler;
 	}
@@ -133,13 +134,13 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	 * @return
 	 */
 	@Override
-	public void playerInHub( IHub hub )    
+	public void playerInHub()    
 	{
 		// removing ingame protocol handler:
 		pipeline.remove( FRAME );
-		if(pipeline.get(IngameProtocolHandler.NAME) != null)
+		if(pipeline.get(AvatarNetworker.NAME) != null)
 		{
-			pipeline.remove( IngameProtocolHandler.NAME );
+			pipeline.remove( AvatarNetworker.NAME );
 		}
 		
 		// registering hub protocol handlers:

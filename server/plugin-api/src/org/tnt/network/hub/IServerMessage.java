@@ -1,4 +1,4 @@
-package org.tnt.multiplayer.network.hub;
+package org.tnt.network.hub;
 
 /**
  * Marker interface for server admin messages

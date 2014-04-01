@@ -2,6 +2,7 @@ package org.tnt;
 
 import org.tnt.account.IPlayerStore;
 import org.tnt.account.PlayerStore;
+import org.tnt.config.TNTConfig;
 import org.tnt.multiplayer.Hub;
 import org.tnt.multiplayer.HubThread;
 import org.tnt.multiplayer.IGameFactory;
@@ -25,7 +26,10 @@ public class TNTModule extends AbstractModule
 		// server main class
 		bind( ITNTServer.class ).           to( TNTServer.class );
 		// server shutdown hook
-		bind( IShutdownHook.class )        .to( TNTServer.class )           .in( Singleton.class);
+		bind( IShutdownHook.class ).        to( TNTServer.class )           .in( Singleton.class);
+		
+		bind( TNTConfig.class ).            toProvider(TNTConfig.class).in( Singleton.class);
+
 		
 		// multiplayer hub, manages player non-ingame actions
 		bind( IHub.class ).                 to( Hub.class )                 .in( Singleton.class);

@@ -1,6 +1,7 @@
 package org.tnt.multiplayer;
 
 import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.plugins.IGameResults;
 
 public interface IHubThread extends Runnable
 {

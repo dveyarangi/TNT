@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import org.tnt.multiplayer.Hub;
+import org.tnt.network.hub.IServerMessage;
 
 import com.spinn3r.log5j.Logger;
 
