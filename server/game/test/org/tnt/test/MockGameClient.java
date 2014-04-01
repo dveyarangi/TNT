@@ -1,6 +1,7 @@
 package org.tnt.test;
 
-import org.tnt.multiplayer.auth.MCAuth;
+
+import org.tnt.multiplayer.network.auth.MCAuth;
 
 import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;
@@ -17,11 +18,11 @@ public class MockGameClient extends Thread
 	}
 	
 	
-	private Logger log = Logger.getLogger(this.getClass());
-	private Client client;
-	private int	playerId;
+	private final Logger log = Logger.getLogger(this.getClass());
+	private final Client client;
+	private final int	playerId;
 
-	private int	charId;
+	private final int	charId;
 
 	public MockGameClient(int playerId, int charId)
 	{

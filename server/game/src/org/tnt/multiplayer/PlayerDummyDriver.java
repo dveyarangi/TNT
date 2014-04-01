@@ -1,5 +1,11 @@
 package org.tnt.multiplayer;
 
+import org.tnt.multiplayer.network.hub.MSClose;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.plugins.IGameResults;
+
+
+
 
 
 
@@ -15,17 +21,37 @@ public class PlayerDummyDriver implements IPlayerDriver
 	public void gameRoomUpdated( GameRoom room )
 	{
 	}
-	
-	@Override
-	public ICharacterDriver gameStarted( MultiplayerGame game, int pid )
-	{
-		return null;
-	}
+
 
 	@Override
 	public void gameEnded( IGameResults results )
 	{
 	}
+
+
+	@Override
+	public IAvatarDriver playerInGame( GameRoom room, Avatar avatar )
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void playerInHub( IHub hub )
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void stop( MSClose reason )
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
 
 
 }

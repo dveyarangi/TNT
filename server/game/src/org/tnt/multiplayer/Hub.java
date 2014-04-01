@@ -6,32 +6,36 @@ import java.util.Map;
 
 import org.tnt.account.Character;
 import org.tnt.account.Player;
-import org.tnt.game.IGamePlugin;
+import org.tnt.multiplayer.network.hub.HubException;
+import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.plugins.IGamePlugin;
+import org.tnt.plugins.IGameResults;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
 
 /**
- * Matches players to games
+ * This is hub for players that handles non-ingame client activity.
+ * 
+ * <li> registers connected players
+ * <li> registers player game requests
+ * <li> creates {@link GameRoom}s and adds players to them
  * TODO: clean finished games
  * TODO: better matchfinding logic
  * 
  * @author Fima
  *
  */
-public class Hub
+@Singleton
+public class Hub implements IHub
 {
 	/**
 	 * A logger
 	 */
 	private final Logger log = Logger.getLogger(this.getClass());
-	
-	/**
-	 * List of players currently connected to players.
-	 * Each player has a corresponding channel handler, that manages current communication protocol with player's client
-	 */
-	private final Map <Player, IPlayerDriver> activePlayers = new HashMap <> ();
 	
 	/**
 	 * Queue of players looking for games
@@ -45,32 +49,51 @@ public class Hub
 	private final Multimap <String, GameRoom> pendingRoomsByType = HashMultimap.create();
 	private final Map <Player, GameRoom> pendingRoomsByPlayer = new HashMap <> ();
 	
+	private final IGameFactory factory;
+	
 	/**
 	 * Hub thread manages multiplayer game lifecycle
 	 */
-	private final HubThread thread;
+	private final IHubThread thread;
 	
-	public Hub()
+	private final IPlayerConnections connections;
+	
+	@Inject 
+	public Hub(IGameFactory factory, IHubThread thread, IPlayerConnections connections)
 	{
-		thread = new HubThread( this );
-		
-		thread.start();
+		this.factory = factory;
+		this.thread = thread;
+		this.connections = connections;
+
+	}
+	
+	@Override
+	public void init()
+	{
+		thread.init();
 	}
 
-	
+
 	/**
 	 * Registers player connection within the orchestrator.
 	 * Called after player had successfully authenticated.
 	 * @param handler
 	 */
-	public boolean registerPlayerHandler( Player player, PlayerHubDriver handler )
+	@Override
+	public boolean playerConnected( Player player, IPlayerDriver driver )
 	{
-		if(activePlayers.containsKey( player ))
+		
+		if(connections.hasPlayer( player ))
 		{
 			return false;
 		}
-		log.debug("Registered player handler for player " + player);
-		activePlayers.put( player, handler );
+		
+		connections.putPlayer( player, driver );
+		
+		log.debug("Registered hub player %s.", player);
+		// informing player driver that player is in hub now:
+		driver.playerInHub( this );
+		
 		
 		return true;
 	}
@@ -80,12 +103,16 @@ public class Hub
 	 * Called when player client disconnects from the server
 	 * @param handler
 	 */
-	public void unregisterPlayerHandler( Player player )
+	@Override
+	public void playerDisconnected( Player player )
 	{
-		log.debug("Unregistered player handler for player " + player);
-		activePlayers.remove( player );
+		// removing from list of active players:
+		connections.removePlayer( player );
 			
-		removeFromGame( player );
+		// removing from game rooms, if is in any:
+		removeFromGameRoom( player );
+		
+		log.debug("Player %s left hub.", player);
 	}
 
 	/**
@@ -94,9 +121,10 @@ public class Hub
 	 * TODO: separate game request, match finding and game launch processes
 	 * @param player
 	 * @param characterId
-	 * @param gamePlugin
+	 * @param gameType
 	 */
-	public void addGameRequest(Player player, int characterId, IGamePlugin gamePlugin)
+	@Override
+	public void addGameRequest(Player player, int characterId, String gameType) throws HubException
 	{
 		
 		Character character = player.getCharacter( characterId );
@@ -106,6 +134,10 @@ public class Hub
 			return; // TODO: send error
 		}
 		
+		IGamePlugin plugin = factory.getPlugin( gameType );
+		if( plugin == null)
+			throw new HubException("Unknown game type [" + gameType + "].");
+		
 		// updating pending characters queue:
 //		queue.put( character, gameRequest.getGameType());
 		
@@ -113,7 +145,7 @@ public class Hub
 		// here should be
 		synchronized(pendingRoomsByType)
 		{
-			Collection <GameRoom> gameCandidates = pendingRoomsByType.get( gamePlugin.getName() );
+			Collection <GameRoom> gameCandidates = pendingRoomsByType.get( plugin.getName() );
 			GameRoom gameroom = null;
 			for(GameRoom aGame : gameCandidates)
 			{
@@ -127,9 +159,9 @@ public class Hub
 			if(gameroom == null)
 			{			
 	
-				gameroom = new GameRoom( gamePlugin, 2 );
+				gameroom = new GameRoom( plugin, 2 );
 				
-				pendingRoomsByType.put( gamePlugin.getName(), gameroom );
+				pendingRoomsByType.put( plugin.getName(), gameroom );
 				pendingRoomsByPlayer.put( player, gameroom );
 			}
 		
@@ -139,7 +171,7 @@ public class Hub
 			// sending game details message:
 			for(Character roomChar : gameroom.getCharacters())
 			{
-				IPlayerDriver driver = activePlayers.get( roomChar.getPlayer() );
+				IPlayerDriver driver = connections.getPlayerDriver( roomChar.getPlayer() );
 				
 				driver.gameRoomUpdated( gameroom );
 			}
@@ -153,15 +185,15 @@ public class Hub
 				}
 				
 				// creating multiplayer game handler:
-				MultiplayerGame game = new MultiplayerGame( gameroom );
-				thread.startGame(game);
+				thread.startGame( gameroom );
 				
 			}
 		}
 	}
 	
-	// TODO sync this with room start
-	public void removeFromGame( Player player )
+	// TODO sync this with room start?
+	@Override
+	public void removeFromGameRoom( Player player )
 	{
 		synchronized(pendingRoomsByType)
 		{			
@@ -180,10 +212,24 @@ public class Hub
 		}	
 	}
 
-
-	IPlayerDriver getPlayer( Player player )
+	@Override
+	public void safeStop()
 	{
-		return activePlayers.get( player );
+		log.debug( "Shutting down multiplayer hub thread..." );
+		
+		connections.safeStop();
+		thread.safeStop();
+
+		log.debug( "Multiplayer hub thread was shut down." );
 	}
+
+
+	@Override
+	public void gameOver( Arena arena, IGameResults results )
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

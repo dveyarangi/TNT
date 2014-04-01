@@ -1,15 +1,17 @@
 package org.tnt.multiplayer;
 
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.tnt.account.Character;
 import org.tnt.account.Player;
-import org.tnt.multiplayer.realtime.IMultiplayerGameListener;
+import org.tnt.multiplayer.realtime.Arena;
+import org.tnt.multiplayer.realtime.Avatar;
+import org.tnt.plugins.IGameResults;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -20,7 +22,8 @@ import com.spinn3r.log5j.Logger;
  * @author Fima
  *
  */
-public class HubThread extends Thread implements IMultiplayerGameListener
+@Singleton
+public class HubThread implements IHubThread
 {
 	/**
 	 * A logger
@@ -28,7 +31,7 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 	private final Logger log = Logger.getLogger(this.getClass());
 
 	
-	private final Hub hub;
+	private IHub hub;
 	
 	/**
 	 * executor pool for game threads
@@ -38,52 +41,53 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 	/**
 	 * Registry of games in progress
 	 */
-	private final Map <Player, MultiplayerGame> runningGames = new IdentityHashMap<> ();
+	private final Map <Player, Arena> runningGames = new IdentityHashMap<> ();
 	
 	private volatile boolean isAlive = false;
-
-	public HubThread (Hub hub)
+	
+	private final IPlayerConnections connections;
+	@Inject 
+	public HubThread (IPlayerConnections connections)
 	{
-		this.hub = hub;
+		this.connections = connections;
+		
 	}
 
-	/**
-	 * Starts multiplayer game from the specified room
-	 * @param gameroom
-	 */
-	public void startGame(MultiplayerGame game )
+	@Override
+	public void init()
 	{
-		game.setListener( this );
-		
-		Map <Character, ICharacterDriver> handlers = new HashMap <> ();
+		log.debug( "Starting multiplayer hub thread..." );
+		new Thread(this, "tnt-hub") .start();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.tnt.multiplayer.IHubThread#startGame(org.tnt.multiplayer.GameRoom)
+	 */
+	@Override
+	public void startGame(GameRoom room )
+	{
+
+		Arena game = new Arena( room );
 		
 		synchronized(runningGames)
 		{
-			int pid = 0;
-			for(Character character : game.getCharacters())
+			
+			for(int pid = 0; pid < game.getAvatars().length; pid ++)
 			{
-				Player player = character.getPlayer();
+				Avatar avatar = game.getAvatars()[pid];
+				Player player = avatar.getPlayer();
 				
-				IPlayerDriver playerDriver = hub.getPlayer( player );
+				IPlayerDriver playerDriver = connections.getPlayerDriver( player );
+				avatar.gameCreated ( playerDriver.playerInGame( room, avatar ) );
 				
-				// sending game ready to all participants:
-				ICharacterDriver charDriver = playerDriver.gameStarted( game, pid );
-				
-				/////////////////////////////////////////////////////////////////////
-				// this was the last admin message, now real-time protocol starts
-				
-				// swapping to real time protocol:
-				handlers.put( character, charDriver );
-				
+					
 				// updating running games registry:
 				runningGames.put( player, game );
-				
-				pid ++;
 			}
 		}	
 		
 		// starting game:
-		game.start( threadPool, handlers );
+		game.start( threadPool );
 	}
 
 	@Override
@@ -108,26 +112,41 @@ public class HubThread extends Thread implements IMultiplayerGameListener
 		isAlive = false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.tnt.multiplayer.IHubThread#gameOver(org.tnt.multiplayer.realtime.Arena, org.tnt.multiplayer.IGameResults)
+	 */
 	@Override
-	public void gameOver( MultiplayerGame game, IGameResults results )
+	public void gameOver( Arena game, IGameResults results )
 	{
 		
 		synchronized(runningGames)
 		{
-			for(Character character : game.getCharacters())
+			for(Avatar avatar : game.getAvatars())
 			{
-				runningGames.remove( character.getPlayer() );
+				runningGames.remove( avatar.getPlayer() );
 				
-				IPlayerDriver driver = hub.getPlayer( character.getPlayer() );
+				IPlayerDriver driver = connections.getPlayerDriver( avatar.getPlayer() );
 				
 				driver.gameEnded( results );
+				
+				driver.playerInHub( hub );
 				
 			}
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.tnt.multiplayer.IHubThread#safeStop()
+	 */
+	@Override
+	public void safeStop()
 	{
-		// TODO Auto-generated method stub
+		this.isAlive = false;
 		
+		for(Arena game : runningGames.values())
+		{
+			game.stop();
+		}
 	}
+
 }

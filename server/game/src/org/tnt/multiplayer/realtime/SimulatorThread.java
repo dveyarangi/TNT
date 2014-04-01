@@ -1,12 +1,10 @@
 package org.tnt.multiplayer.realtime;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
+import org.tnt.Calculator;
+import org.tnt.plugins.IGameResults;
+import org.tnt.plugins.IGameSimulator;
 
-import org.tnt.game.IGameSimulator;
-import org.tnt.multiplayer.IGameResults;
-import org.tnt.multiplayer.IGameUpdate;
-import org.tnt.multiplayer.MultiplayerGame;
-
+import com.google.inject.Inject;
 import com.spinn3r.log5j.Logger;
 
 /**
@@ -22,26 +20,28 @@ public class SimulatorThread implements Runnable
 	 * Current ingame time (starts at 0)
 	 */
 	private long startTime;
-	private long time;
+	private int time;
 	
 	private final IGameSimulator simulator;
 	
-	private final MultiplayerGame multiplayer;
+	private final Arena multiplayer;
 	
 	////////////////////////////////////////////////////////////
 	
 	// thread service stuff
-	private static Logger log = Logger.getLogger( SimulatorThread.class );
+	private final Logger log = Logger.getLogger( this.getClass() );
 	
 	private boolean isAlive;
 	
 	private boolean isPaused = true;
 	
 	private static final long HEARTBEAT = 30; // ms
-
+	
+	@Inject private Calculator calculator; 
+	
 	////////////////////////////////////////////////////////////
 	
-	public SimulatorThread(MultiplayerGame multiplayer, IGameSimulator simulator)
+	public SimulatorThread(Arena multiplayer, IGameSimulator simulator)
 	{
 		this.simulator = simulator;
 		this.multiplayer = multiplayer;
@@ -51,29 +51,23 @@ public class SimulatorThread implements Runnable
 	public void run()
 	{
 		
-		TIntObjectHashMap <IGameUpdate> updatesBuffer = new TIntObjectHashMap <> ();
-		
-		long updateTime = startTime = System.nanoTime();
+		long updateTime = startTime = calculator.getTime();
 		long now;
 		long stepTime;
 		
 		IGameResults results = null;
 		
-		simulator.init();
-		
 		isAlive = true;
 		
-		while( isAlive )
+		while( isAlive  )
 		{
 			// testing game end condition:
 			results = simulator.isOver();
 			if(results != null)
-			{
 				break;
-			}
 			
 			// registering step start time:
-			now = System.nanoTime();
+			now = calculator.getTime();
 			
 			if(!isPaused)
 			{
@@ -82,15 +76,8 @@ public class SimulatorThread implements Runnable
 				time += stepTime;
 
 				// advancing game and getting updates
-				simulator.step( stepTime, updatesBuffer );
-				
-				// dispatching updates
-				// TODO: should be a separate controllable frequency
-				// TODO: this copying is unnecessary
-				for(int pid : updatesBuffer.keys())
-				{
-					multiplayer.addUpdate( pid, updatesBuffer.get( pid ) );
-				}
+				simulator.step( stepTime, time );
+
 			}
 			
 			updateTime = now; 

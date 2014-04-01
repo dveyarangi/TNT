@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.tnt.account.Character;
 import org.tnt.account.Player;
-import org.tnt.game.IGamePlugin;
+import org.tnt.plugins.IGamePlugin;
 import org.tnt.util.IDProvider;
 
 /**

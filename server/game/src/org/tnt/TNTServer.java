@@ -1,124 +1,117 @@
 package org.tnt;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringEncoder;
-
-import org.tnt.account.PlayerStore;
-import org.tnt.config.ServerConfig;
+import org.tnt.account.IPlayerStore;
 import org.tnt.config.TNTConfig;
-import org.tnt.game.GameFactory;
-import org.tnt.game.rats.RatsPlugin;
-import org.tnt.multiplayer.Hub;
-import org.tnt.multiplayer.auth.AuthHandler;
+import org.tnt.debug.Debug;
+import org.tnt.multiplayer.IGameFactory;
+import org.tnt.multiplayer.IHub;
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
 import com.spinn3r.log5j.Logger;
 
-public class TNTServer 
+@Singleton
+public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 {
 	private final Logger log = Logger.getLogger(this.getClass());
 
-	private ServerConfig	config;
+	@Inject private TNTConfig	config;
 	
-	private PlayerStore store;
+	@Inject private IGameFactory factory;
 	
-	private Hub hub;
+	@Inject private IPlayerStore store;
 	
-	private ChannelInitializer <SocketChannel> channelInitializer; 
-	public static final DelimiterBasedFrameDecoder FRAME_DECODER = new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() );
+	@Inject private IHub hub;
 	
-	private ServerBootstrap bootstrap;
+	@Inject private INetworkThread network; 
 	
-	public TNTServer(  )
+	@Inject IShutdownHook shutdownHook;
+	
+	final long startTime = System.currentTimeMillis();
+	
+	public TNTServer()
 	{
-
+		super( "tnt-server" );
 	}
 	
-	public void init( ServerConfig config )
+	@Override
+	public void init()
 	{
-		log.info( "initializing..." );
-		long startTime = System.currentTimeMillis();
-		// server configuration
-		this.config = config;
-		
-		// storage of player account, profile and characters
-		this.store = new PlayerStore();
-		
-		// multiplayer hub:
-		this.hub = new Hub();
-		
-		GameFactory.registerPlugin( new RatsPlugin() );
-		
-		// authentication handler appendix:
-		this.channelInitializer = new ChannelInitializer<SocketChannel>() {
-			private final AuthHandler handler = new AuthHandler( store, hub );
-			@Override public void initChannel( SocketChannel ch ) throws Exception
-			{
-				ch.pipeline().addLast( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ));
-				ch.pipeline().addLast( "encoder", new StringEncoder());
-				
-				ch.pipeline().addLast( AuthHandler.NAME, handler );
-			}
-		};
-		EventLoopGroup bossGroup   = new NioEventLoopGroup();
-		EventLoopGroup workerGroup = new NioEventLoopGroup();
-		bootstrap = new ServerBootstrap();
-		bootstrap.group( bossGroup, workerGroup ).channel( NioServerSocketChannel.class );
-		bootstrap.childHandler( channelInitializer );
-		bootstrap.option( ChannelOption.SO_BACKLOG, 128 );
-		bootstrap.childOption( ChannelOption.SO_KEEPALIVE, true );
+		log.info( "Starting server..." );
 		
 		
-		log.info( "Started " + (System.currentTimeMillis() - startTime) + " ms." );
-	}
+//		Thread.sleep( 1000 );
 
-	public void run() throws Exception
-	{
-		try
-		{
-			// Bind and start to accept incoming connections.
-			ChannelFuture f = bootstrap.bind( config.getPort() ).sync();
-			log.info( "Listening on port %d...", config.getPort());
-
-			// Wait until the server socket is closed.
-			// In this example, this does not happen, but you can do that to
-			// gracefully
-			// shut down your server.
-			f.channel().closeFuture().sync();
+		try {
+			// loading server configuration:
+			config.load();
+			
+			// loading server resources:
+			factory.init();
+			
+			//calculator.init();
+			
+			store.init();
+			
+			hub.init();
+			
+			network.init();
+			
+			if(true)
+				Debug.init();
+			
 		}
 		catch(Exception e)
 		{
-			log.fatal( "Failed to bind server channel on port %d: %s", config.getPort(), e.getMessage());
-			System.exit(1);
+			log.fatal( "Failed to start server." );
+			fail(e);
 		}
-		finally
-		{
-			bootstrap.group().shutdownGracefully();
-		}
+		
+		Runtime.getRuntime().addShutdownHook( (Thread)shutdownHook );
+		log.info( "Server started in " + (System.currentTimeMillis() - startTime) + " ms." );
 	}
+
+
 
 	public static void main( String[] args ) throws Exception
 	{
+		Thread.currentThread().setName( "tnt-server" );
 		
-		TNTConfig config = TNTConfig.load( args );
-
-		TNTServer server = new TNTServer();
+		Injector injector = Guice.createInjector(new TNTModule());
 		
-		server.init( config.getServerConfig() );
+		ITNTServer server = injector.getInstance( ITNTServer.class );
 		
-		server.run();
+		server.init();
 		
-		TNTConsole console = new TNTConsole( server );
+	/*	TNTConsole console = new TNTConsole( server );
 		Thread consoleThread = new Thread( console, "tnt-console" );
 		consoleThread.setDaemon( true );
-		consoleThread.start();
+		consoleThread.start();*/
 	}
+
+
+		@Override
+		public void run()
+		{
+			log.info( "Shutting down server..." );
+			hub.safeStop();
+			network.safeStop();
+			log.info( "Server decomposed (uptime " + (System.currentTimeMillis() - startTime)/1000/60 + " min.)" );
+		}
+		@Override
+		public void fail(Exception e)
+		{
+			log.fatal( "Server crushed.", e );
+			this.start();
+			System.exit( 1 );
+		}
+		@Override
+		public void shutdown()
+		{
+			this.start();
+			System.exit( 1 );
+		}	
+
 }
