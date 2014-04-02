@@ -77,7 +77,7 @@ public class HubThread implements IHubThread
 				Avatar avatar = game.getAvatars()[pid];
 				Player player = avatar.getPlayer();
 				
-				IPlayerDriver playerDriver = connections.getPlayerDriver( player );
+				IPlayerHubDriver playerDriver = connections.getPlayerDriver( player );
 				avatar.gameCreated ( playerDriver.playerInGame( room, avatar ) );
 				
 					
@@ -125,11 +125,9 @@ public class HubThread implements IHubThread
 			{
 				runningGames.remove( avatar.getPlayer() );
 				
-				IPlayerDriver driver = connections.getPlayerDriver( avatar.getPlayer() );
+				IPlayerHubDriver driver = connections.getPlayerDriver( avatar.getPlayer() );
 				
 				driver.gameEnded( results );
-				
-				driver.playerInHub( hub );
 				
 			}
 		}

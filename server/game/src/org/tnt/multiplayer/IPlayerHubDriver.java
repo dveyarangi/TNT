@@ -14,7 +14,7 @@ import org.tnt.plugins.IGameResults;
  * 
  * @author Fima
  */
-public interface IPlayerDriver
+public interface IPlayerHubDriver
 {
 	/**
 	 * Invoked when player enters the game room or game room changes.
@@ -36,7 +36,7 @@ public interface IPlayerDriver
 	 */
 	void gameEnded( IGameResults results );
 
-	void playerInHub( IHub hub );
+	void playerInHub();
 
 	public void stop(MSClose reason);
 }

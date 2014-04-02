@@ -3,14 +3,14 @@ package org.tnt.account;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tnt.multiplayer.IPlayerDriver;
+import org.tnt.multiplayer.IPlayerHubDriver;
 
 /**
  * Representation of a player registered within the server.
  * 
  * Has a system-unique {@link #id} and list of character this player manages.
  * 
- * A connected player is represented by {@link IPlayerDriver}
+ * A connected player is represented by {@link IPlayerHubDriver}
  * 
  * @author Fima
  */

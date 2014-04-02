@@ -7,7 +7,7 @@ import org.tnt.plugins.IGameResults;
 
 public interface IHub
 {
-	public boolean playerConnected( Player player, IPlayerDriver driver );
+	public boolean playerConnected( Player player, IPlayerHubDriver driver );
 
 	void gameOver( Arena arena, IGameResults results );
 

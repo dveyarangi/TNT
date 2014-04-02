@@ -17,7 +17,7 @@ public class PlayerConnections implements IPlayerConnections
 	 * List of players currently available in the hub.
 	 * Each player has a corresponding player driver, to receive or send messages to player controller
 	 */
-	private final Map <Player, IPlayerDriver> activePlayers = new HashMap <> ();
+	private final Map <Player, IPlayerHubDriver> activePlayers = new HashMap <> ();
 
 	@Override
 	public boolean hasPlayer( Player player )
@@ -26,7 +26,7 @@ public class PlayerConnections implements IPlayerConnections
 	}
 
 	@Override
-	public void putPlayer( Player player, IPlayerDriver driver )
+	public void putPlayer( Player player, IPlayerHubDriver driver )
 	{
 		activePlayers.put( player, driver );
 	}
@@ -38,7 +38,7 @@ public class PlayerConnections implements IPlayerConnections
 	}
 
 	@Override
-	public IPlayerDriver getPlayerDriver( Player player )
+	public IPlayerHubDriver getPlayerDriver( Player player )
 	{
 		return activePlayers.get( player );
 	}
@@ -48,7 +48,7 @@ public class PlayerConnections implements IPlayerConnections
 	{
 //		log.debug( "Disconnecting from pending clients (%d total)...", activePlayers.size() );
 		// dropping players from rooms:
-		for(IPlayerDriver driver : activePlayers.values())
+		for(IPlayerHubDriver driver : activePlayers.values())
 			driver.stop(MSClose.SERVER_SHUTDOWN);
 			
 	}	

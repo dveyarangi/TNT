@@ -8,10 +8,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.DefaultThreadFactory;
+
+import java.util.concurrent.ThreadFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,7 +18,6 @@ import javax.inject.Singleton;
 import org.tnt.INetworkThread;
 import org.tnt.IShutdownHook;
 import org.tnt.config.NetworkConfig;
-import org.tnt.multiplayer.network.auth.AuthHandler;
 import org.tnt.multiplayer.network.auth.IAuthenticator;
 
 import com.spinn3r.log5j.Logger;
@@ -39,6 +37,8 @@ public class NettyNetwork implements INetworkThread
 	
 	private final IAuthenticator authenticator;
 	
+	private final static String NAME = "tnt-network";
+	
 	@Inject
 	public NettyNetwork(NetworkConfig config, final IAuthenticator authenticator, IShutdownHook shutdownHook)
 	{
@@ -52,31 +52,20 @@ public class NettyNetwork implements INetworkThread
 	public void init()
 	{
 		log.debug("Starting networking thread...");
-		ChannelInitializer <SocketChannel> channelInitializer = new ChannelInitializer<SocketChannel>() {
-			@Override public void initChannel( final SocketChannel ch ) throws Exception
-			{
-				ch.pipeline().addLast( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ));
-				ch.pipeline().addLast( "encoder", new StringEncoder());
-				
-				ch.pipeline().addLast( AuthHandler.NAME, authenticator );
-/*				ch.closeFuture().addListener( new GenericFutureListener<ChannelFuture>() {
-					@Override
-					public void operationComplete( ChannelFuture future ) throws Exception
-					{
-						connectedChannels.remove( future.channel() );
-					}
-				} );*/
-			}
-		};
-		EventLoopGroup bossGroup   = new NioEventLoopGroup(0, new DefaultThreadFactory("tnt-network"));
-		EventLoopGroup workerGroup = new NioEventLoopGroup(0, new DefaultThreadFactory("tnt-network") );
+		ChannelInitializer <SocketChannel> channelInitializer = new PlayerChannelInitializer ( authenticator );
+		
+		ThreadFactory threadFactory = new DefaultThreadFactory(NAME);
+		
+		
+		EventLoopGroup bossGroup   = new NioEventLoopGroup(0, threadFactory);
+		EventLoopGroup workerGroup = new NioEventLoopGroup(0, threadFactory );
 		bootstrap = new ServerBootstrap();
 		bootstrap.group( bossGroup, workerGroup ).channel( NioServerSocketChannel.class );
 		bootstrap.childHandler( channelInitializer );
 		bootstrap.option( ChannelOption.SO_BACKLOG, 128 );
 		bootstrap.childOption( ChannelOption.SO_KEEPALIVE, true );
 		
-		new Thread(this, "tnt-network").start();
+		new Thread(this, NAME).start();
 	}
 	
 	@Override

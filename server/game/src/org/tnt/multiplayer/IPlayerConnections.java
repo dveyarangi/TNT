@@ -7,11 +7,11 @@ public interface IPlayerConnections
 
 	boolean hasPlayer( Player player );
 
-	void putPlayer( Player player, IPlayerDriver driver );
+	void putPlayer( Player player, IPlayerHubDriver driver );
 
 	void removePlayer( Player player );
 
-	IPlayerDriver getPlayerDriver( Player player );
+	IPlayerHubDriver getPlayerDriver( Player player );
 
 	void safeStop();
 

@@ -4,17 +4,12 @@ import org.tnt.multiplayer.network.hub.MSClose;
 import org.tnt.multiplayer.realtime.Avatar;
 import org.tnt.plugins.IGameResults;
 
-
-
-
-
-
 /**
  * This might be the place to put bot's in-game scripted room actions and AI initiation. 
  * @author Fima
  *
  */
-public class PlayerDummyDriver implements IPlayerDriver
+public class PlayerDummyDriver implements IPlayerHubDriver
 {
 
 	@Override
@@ -38,7 +33,7 @@ public class PlayerDummyDriver implements IPlayerDriver
 
 
 	@Override
-	public void playerInHub( IHub hub )
+	public void playerInHub()
 	{
 		// TODO Auto-generated method stub
 		

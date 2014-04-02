@@ -28,7 +28,7 @@ import com.spinn3r.log5j.Logger;
  * 
  * @author Fima
  */
-public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPlayerDriver
+public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPlayerHubDriver
 {
 	private static Logger log = Logger.getLogger(PlayerHubDriver.class);
 	
@@ -125,6 +125,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	@Override
 	public void gameEnded( IGameResults results )
 	{
+		playerInHub();
 		
 		hubHandler.write( results );
 	}

@@ -80,7 +80,7 @@ public class Hub implements IHub
 	 * @param handler
 	 */
 	@Override
-	public boolean playerConnected( Player player, IPlayerDriver driver )
+	public boolean playerConnected( Player player, IPlayerHubDriver driver )
 	{
 		
 		if(connections.hasPlayer( player ))
@@ -92,7 +92,7 @@ public class Hub implements IHub
 		
 		log.debug("Registered hub player %s.", player);
 		// informing player driver that player is in hub now:
-		driver.playerInHub( this );
+		driver.playerInHub();
 		
 		
 		return true;
@@ -171,7 +171,7 @@ public class Hub implements IHub
 			// sending game details message:
 			for(Character roomChar : gameroom.getCharacters())
 			{
-				IPlayerDriver driver = connections.getPlayerDriver( roomChar.getPlayer() );
+				IPlayerHubDriver driver = connections.getPlayerDriver( roomChar.getPlayer() );
 				
 				driver.gameRoomUpdated( gameroom );
 			}

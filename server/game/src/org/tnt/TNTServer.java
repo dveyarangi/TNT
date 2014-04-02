@@ -82,7 +82,7 @@ public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 		Injector injector = Guice.createInjector(new TNTModule());
 		
 		ITNTServer server = injector.getInstance( ITNTServer.class );
-		
+		injector.createChildInjector( arg0 )
 		server.init();
 		
 	/*	TNTConsole console = new TNTConsole( server );
