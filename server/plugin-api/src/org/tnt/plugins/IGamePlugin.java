@@ -2,6 +2,7 @@ package org.tnt.plugins;
 
 import io.netty.channel.Channel;
 
+import org.tnt.ai.IAvatarAISettings;
 import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IAvatar;
 import org.tnt.multiplayer.IAvatarDriver;

@@ -62,7 +62,7 @@ public class Arena implements IArena
 		
 		this.plugin = room.getPlugin();
 		
-		this.avatars = new Avatar [ room.getCharacters().size() ];
+		this.avatars = new Avatar [ room.getParticipants().size() ];
 		
 		// creating character event queues:
 		for( int pid = 0; pid < avatars.length; pid ++)
@@ -129,7 +129,13 @@ public class Arena implements IArena
 		log.debug("Game %s character [%s] has acknowledged game start", this.toString(), avatar);
 		
 		// checking if all clients have acknowledged the game start:
-		for(Avatar anAvatar : avatars) if(!anAvatar.isIngame() ) return;
+		for(Avatar anAvatar : avatars)
+		{
+			if(!anAvatar.isIngame() )
+			{
+				return;
+			}
+		}
 
 //		for(boolean ready : playerStates) if(!ready) return;
 

@@ -136,7 +136,9 @@ public class Hub implements IHub
 		
 		IGamePlugin plugin = factory.getPlugin( gameType );
 		if( plugin == null)
+		{
 			throw new HubException("Unknown game type [" + gameType + "].");
+		}
 		
 		// updating pending characters queue:
 //		queue.put( character, gameRequest.getGameType());
@@ -166,12 +168,12 @@ public class Hub implements IHub
 			}
 		
 			// adding character to the game:
-			gameroom.addCharacter( character );
+			gameroom.addParticipant( player );
 			
 			// sending game details message:
-			for(Character roomChar : gameroom.getCharacters())
+			for(Player participant : gameroom.getParticipants())
 			{
-				IPlayerHubDriver driver = connections.getPlayerDriver( roomChar.getPlayer() );
+				IPlayerHubDriver driver = connections.getPlayerDriver( participant );
 				
 				driver.gameRoomUpdated( gameroom );
 			}
@@ -179,9 +181,9 @@ public class Hub implements IHub
 			if(gameroom.isFull())
 			{
 				pendingRoomsByType.remove( gameroom.getType(), gameroom );
-				for(Character roomChar : gameroom.getCharacters())
+				for(Player participant : gameroom.getParticipants())
 				{
-					pendingRoomsByPlayer.remove( roomChar.getPlayer() );
+					pendingRoomsByPlayer.remove( participant );
 				}
 				
 				// creating multiplayer game handler:
@@ -202,10 +204,12 @@ public class Hub implements IHub
 			 {
 				return; // not in room or ingame
 			}
-			room.removeCharacter( player );
+			room.removeParticipant( player );
 
-			if(room.getCharacters().isEmpty())
+			if(room.getParticipants().isEmpty())
 			{
+				// TODO: instead collect empty rooms after delay
+				// TODO: explicit command to delete room
 				pendingRoomsByType.remove( room.getType(), room );
 			}
 			
