@@ -2,8 +2,10 @@ package org.tnt.plugin.rats;
 
 import io.netty.channel.Channel;
 
+import org.tnt.ai.IAvatarAISettings;
 import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IAvatar;
+import org.tnt.multiplayer.IAvatarDriver;
 import org.tnt.network.realtime.IAvatarNetworker;
 import org.tnt.plugins.GamePlugin;
 import org.tnt.plugins.IGamePlugin;
@@ -12,11 +14,8 @@ import org.tnt.plugins.IGameSimulator;
 @GamePlugin
 public class RatsPlugin implements IGamePlugin
 {
-	
-	public static final String NAME = "rats";
-
 	@Override
-	public String getName() { return NAME; }
+	public String getName() { return "rats"; }
 	@Override
 	public void init()
 	{
@@ -33,6 +32,12 @@ public class RatsPlugin implements IGamePlugin
 	public IAvatarNetworker createAvatarNetworker( Channel channel, IAvatar avatar )
 	{
 		return new RatNetworkDriver( channel, avatar );
+	}
+	@Override
+	public IAvatarDriver createAvatarAI(IAvatar avatar,
+			IAvatarAISettings settings) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
