@@ -68,7 +68,7 @@ public class Arena implements IArena
 		for( int pid = 0; pid < avatars.length; pid ++)
 		{
 			
-			avatars[pid] = new Avatar(this, room.getCharacters().get( pid ));
+			avatars[pid] = new Avatar( this, room.getCharacter( pid ) );
 			
 		}
 		

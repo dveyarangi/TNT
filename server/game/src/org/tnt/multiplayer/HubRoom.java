@@ -10,11 +10,21 @@ import org.tnt.account.Player;
 import org.tnt.util.IDProvider;
 
 /**
+ * Represents a room that several players may be in simultaneously.
+ * 
+ * Possible implementations are: p2p chat channel, group chat, game lobby
+ * 
  * @author fimar
- *
  */
-public class HubRoom
+public class HubRoom 
 {
+	
+	/**
+	 * Room creation time
+	 * TODO: use to monitor rooms that are pending for too long.
+	 */
+	private final long creationTime = System.currentTimeMillis();
+	
 	/**
 	 * Game system-unique identifier for persistence and reference.
 	 */
@@ -23,7 +33,7 @@ public class HubRoom
 	/**
 	 * joined characters
 	 */
-	final List <Player> players = new ArrayList <> ();
+	private final List <Player> players;
 
 	/**
 	 * 
@@ -32,19 +42,13 @@ public class HubRoom
 	{
 		super();
 		this.roomId = IDProvider.generateGameId();
+		this.players = new ArrayList <> ();
 	}
 
 	public String getGameId() {	return roomId; }
 	
-	public void addParticipant( Player player )
-	{
-		players.add( player );
-	}
-
-	public void removeParticipant( Player player )
-	{
-		players.remove( player );
-	}
+	public void addParticipant( Player player ) { players.add( player ); }
+	public void removeParticipant( Player player ) { players.remove( player ); }
 
 	/**
 	 * Retrieves participant list.

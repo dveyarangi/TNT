@@ -1,5 +1,9 @@
 package org.tnt.multiplayer;
 
+import java.util.ArrayList;
+
+import org.tnt.account.Character;
+import org.tnt.account.Player;
 import org.tnt.plugins.IGamePlugin;
 
 /**
@@ -13,12 +17,6 @@ public class GameRoom extends HubRoom
 {
 	
 	/**
-	 * Room creation time
-	 * TODO: use to monitor rooms that are pending for too long.
-	 */
-	private final long creationTime = System.currentTimeMillis();
-	
-	/**
 	 * room capacity
 	 */
 	private final int capacity;
@@ -27,15 +25,17 @@ public class GameRoom extends HubRoom
 	 * Game served by this room
 	 */
 	private final IGamePlugin plugin;
+	
+	private ArrayList <Character> characters;
 
 
 	public GameRoom( IGamePlugin plugin, int capacity )
 	{
 		this.plugin = plugin;
 		this.capacity = capacity;
+		
+		this.characters = new ArrayList <Character> ();
 	}
-
-	
 	
 	public boolean isFull()
 	{
@@ -46,5 +46,27 @@ public class GameRoom extends HubRoom
 
 	public IGamePlugin getPlugin() { return plugin; }
 
+	@Override
+	public void addParticipant( Player player )
+	{
+		super.addParticipant( player );
+		characters.add( player.getCharacter( 0 ) );
+	}
+
+	@Override
+	public void removeParticipant( Player player )
+	{
+		super.removeParticipant( player );
+		characters.remove( player.getCharacter( 0 ) );
+	}
+
+	/**
+	 * @param pid
+	 * @return
+	 */
+	public Character getCharacter( int pid )
+	{
+		return characters.get( pid );
+	}
 
 }
