@@ -3,13 +3,13 @@ package org.tnt.plugin.rats;
 import io.netty.channel.Channel;
 
 import org.tnt.ai.IAvatarAISettings;
+import org.tnt.game.GamePlugin;
+import org.tnt.game.IGamePlugin;
+import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IAvatar;
 import org.tnt.multiplayer.IAvatarDriver;
 import org.tnt.network.realtime.IAvatarNetworker;
-import org.tnt.plugins.GamePlugin;
-import org.tnt.plugins.IGamePlugin;
-import org.tnt.plugins.IGameSimulator;
 
 @GamePlugin
 public class RatsPlugin implements IGamePlugin

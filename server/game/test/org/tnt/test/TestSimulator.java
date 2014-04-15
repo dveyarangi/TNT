@@ -1,9 +1,9 @@
 package org.tnt.test;
 
+import org.tnt.game.GameSimulator;
+import org.tnt.game.IGameResults;
+import org.tnt.halls.realtime.Arena;
 import org.tnt.multiplayer.IAvatarUpdate;
-import org.tnt.multiplayer.realtime.Arena;
-import org.tnt.plugins.GameSimulator;
-import org.tnt.plugins.IGameResults;
 
 public class TestSimulator extends GameSimulator
 {

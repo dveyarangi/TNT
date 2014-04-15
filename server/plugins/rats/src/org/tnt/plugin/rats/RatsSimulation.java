@@ -1,9 +1,9 @@
 package org.tnt.plugin.rats;
 
+import org.tnt.game.GameSimulator;
+import org.tnt.game.IGameResults;
 import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IAvatarUpdate;
-import org.tnt.plugins.GameSimulator;
-import org.tnt.plugins.IGameResults;
 
 
 

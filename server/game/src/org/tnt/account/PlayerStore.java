@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class PlayerStore implements IPlayerStore
 {
-	private final Map <Long, Player> players = new HashMap <Long, Player> ();
-		
+	private final Map <Long, IPlayer> players = new HashMap <Long, IPlayer> ();
+
 	public PlayerStore()
 	{
 	}
@@ -16,17 +16,18 @@ public class PlayerStore implements IPlayerStore
 	@Override
 	public void init()
 	{
-		Player player1 = new Player(1);
-		player1.getCharacters().add( new Character( 0, player1 ) );
+		IPlayer player1 = new Player(1);
+		player1.addCharacter( new Character( 0, player1 ) );
 		players.put( player1.getId(), player1 );
-		Player player2 = new Player(2);
-		player2.getCharacters().add( new Character( 0, player2) );
+		IPlayer player2 = new Player(2);
+		player2.addCharacter( new Character( 0, player2) );
 		players.put( player2.getId(), player2 );
 	}
 
-	public Player getPlayer( long playerId )
+	@Override
+	public IPlayer getPlayer( final long playerId )
 	{
-		
+
 		return players.get( playerId );
 	}
 

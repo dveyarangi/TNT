@@ -3,18 +3,18 @@ package org.tnt.account;
 import com.google.common.base.Preconditions;
 
 
-public class Character
+public class Character implements ICharacter
 {
 	private long id;
-	
-	private Player player;
-	
-	public Character(long id, Player player)
+
+	private IPlayer player;
+
+	public Character(final long id, final IPlayer player)
 	{
 		this.player = Preconditions.checkNotNull( player );
-		
+
 		this.id = id;
 	}
-	public Player getPlayer() { return player; }
+	public IPlayer getPlayer() { return player; }
 	public long getId() { return id; }
 }

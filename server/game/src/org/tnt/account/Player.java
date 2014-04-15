@@ -3,7 +3,7 @@ package org.tnt.account;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tnt.multiplayer.IPlayerHubDriver;
+import org.tnt.halls.hub.IPlayerHubDriver;
 
 /**
  * Representation of a player registered within the server.
@@ -14,30 +14,38 @@ import org.tnt.multiplayer.IPlayerHubDriver;
  * 
  * @author Fima
  */
-public class Player
+public class Player implements IPlayer
 {
 	private final long id;
-	
-	private final List <Character> characters;
-	
-	public Player(long id)
+
+	private final List <ICharacter> characters;
+
+	public Player(final long id)
 	{
 		this.id = id;
 
-		this.characters = new ArrayList <Character> ();
+		this.characters = new ArrayList <ICharacter> ();
 	}
-	
-	public Character getCharacter(int charId) 
+
+	@Override
+	public ICharacter getCharacter(final int charId)
 	{
 		if(characters.size() <= charId)
 			return null;
-		return characters.get( charId ); 
+		return characters.get( charId );
 	}
-	
-	public List <Character> getCharacters() { return characters; }
 
-	public long getId() { return id; }
-	
 	@Override
-	public String toString() { return "player id: " + id; } 
+	public long getId() { return id; }
+
+	@Override
+	public String toString() { return "player id: " + id; }
+
+	@Override
+	public int getCharactersAmount() { return characters.size(); }
+
+	@Override
+	public void addCharacter(final ICharacter character) {
+		characters.add(character);
+	}
 }
