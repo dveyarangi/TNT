@@ -3,7 +3,7 @@ package org.tnt.account;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tnt.halls.hub.IPlayerHubDriver;
+import org.tnt.hub.IPlayerHubDriver;
 
 /**
  * Representation of a player registered within the server.

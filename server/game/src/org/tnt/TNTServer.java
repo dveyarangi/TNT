@@ -7,6 +7,7 @@ import org.tnt.config.TNTConfig;
 import org.tnt.debug.Debug;
 import org.tnt.game.GameModule;
 import org.tnt.game.IGameFactory;
+import org.tnt.halls.IHalls;
 import org.tnt.network.INetworkThread;
 import org.tnt.network.NetworkModule;
 

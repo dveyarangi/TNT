@@ -8,10 +8,9 @@ import io.netty.channel.ChannelPromise;
 
 import javax.inject.Inject;
 
-import org.tnt.IHall;
-import org.tnt.IHalls;
 import org.tnt.account.IPlayer;
-import org.tnt.halls.hub.PlayerHubDriver;
+import org.tnt.halls.IHall;
+import org.tnt.halls.IHalls;
 
 import com.google.gson.Gson;
 import com.google.inject.assistedinject.Assisted;
@@ -24,7 +23,7 @@ import com.spinn3r.log5j.Logger;
  */
 public class PlayerProtocol extends ChannelDuplexHandler implements IPlayerProtocol
 {
-	private static Logger log = Logger.getLogger(PlayerHubDriver.class);
+	private Logger log = Logger.getLogger(this.getClass());
 
 	private IPlayer player;
 

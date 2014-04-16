@@ -2,8 +2,8 @@ package org.tnt.test;
 
 import org.tnt.game.GameSimulator;
 import org.tnt.game.IGameResults;
-import org.tnt.halls.realtime.Arena;
 import org.tnt.multiplayer.IAvatarUpdate;
+import org.tnt.realtime.Arena;
 
 public class TestSimulator extends GameSimulator
 {

@@ -2,9 +2,9 @@ package org.tnt.network;
 
 import io.netty.channel.ChannelInitializer;
 
-import org.tnt.IHalls;
-import org.tnt.IHallsProvider;
 import org.tnt.account.IPlayerStore;
+import org.tnt.halls.Halls;
+import org.tnt.halls.IHalls;
 import org.tnt.network.auth.AuthHandler;
 import org.tnt.network.auth.IAuthenticator;
 
@@ -30,8 +30,9 @@ public class NetworkModule extends AbstractModule
 	@Override
 	protected void configure() {
 
-		// this is the external dependency of h
-		bind( IHallsProvider.class )               .to( IHalls.class );
+
+		// binds hall services initializer
+		bind( IHalls.class ).               to(Halls.class).in( Singleton.class);
 
 		// connected players repository
 		bind( IPlayerConnections.class )           .to( PlayerConnections.class )   .in( Singleton.class );

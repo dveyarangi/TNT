@@ -4,8 +4,8 @@ import io.netty.channel.Channel;
 
 import javax.inject.Inject;
 
-import org.tnt.IHalls;
 import org.tnt.account.IPlayer;
+import org.tnt.halls.IHalls;
 
 public class ProtocolFactory implements IProtocolFactory
 {

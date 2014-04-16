@@ -20,7 +20,7 @@ import javax.inject.Singleton;
 
 import org.tnt.account.IPlayer;
 import org.tnt.account.IPlayerStore;
-import org.tnt.halls.hub.PlayerHubDriver;
+import org.tnt.hub.PlayerHubDriver;
 import org.tnt.network.IPlayerConnections;
 import org.tnt.network.IPlayerProtocol;
 
