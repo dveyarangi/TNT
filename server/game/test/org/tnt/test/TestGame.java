@@ -7,7 +7,7 @@ import org.tnt.game.IGamePlugin;
 import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IAvatar;
-import org.tnt.network.realtime.IAvatarNetworker;
+import org.tnt.realtime.IAvatarNetworker;
 
 @GamePlugin
 public class TestGame implements IGamePlugin

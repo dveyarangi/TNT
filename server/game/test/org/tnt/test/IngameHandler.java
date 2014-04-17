@@ -8,7 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import org.tnt.multiplayer.network.hub.MSGameDetails;
-import org.tnt.network.realtime.IServerPacket;
+import org.tnt.realtime.IServerPacket;
 
 import com.spinn3r.log5j.Logger;
 

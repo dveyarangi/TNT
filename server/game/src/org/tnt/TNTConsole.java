@@ -1,5 +1,6 @@
 package org.tnt;
 
+
 public class TNTConsole implements Runnable
 {
 	

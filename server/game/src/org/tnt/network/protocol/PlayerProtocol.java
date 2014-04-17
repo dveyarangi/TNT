@@ -1,4 +1,4 @@
-package org.tnt.network;
+package org.tnt.network.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;

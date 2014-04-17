@@ -9,7 +9,7 @@ import org.tnt.account.Player;
 import org.tnt.game.IGameFactory;
 import org.tnt.game.IGamePlugin;
 import org.tnt.game.IGameResults;
-import org.tnt.network.IPlayerConnections;
+import org.tnt.network.protocol.IPlayerConnections;
 import org.tnt.realtime.Arena;
 
 import com.google.common.collect.HashMultimap;

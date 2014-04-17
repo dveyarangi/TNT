@@ -6,7 +6,7 @@ import org.tnt.ai.IAvatarAISettings;
 import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IAvatar;
 import org.tnt.multiplayer.IAvatarDriver;
-import org.tnt.network.realtime.IAvatarNetworker;
+import org.tnt.realtime.IAvatarNetworker;
 
 /**
  * This is interface for game factory for a specific game type.

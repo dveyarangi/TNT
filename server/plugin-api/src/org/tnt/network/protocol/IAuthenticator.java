@@ -1,4 +1,4 @@
-package org.tnt.network.auth;
+package org.tnt.network.protocol;
 
 import io.netty.channel.ChannelHandler;
 

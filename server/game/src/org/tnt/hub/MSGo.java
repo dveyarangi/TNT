@@ -1,6 +1,6 @@
 package org.tnt.hub;
 
-import org.tnt.network.IServerMessage;
+import org.tnt.network.protocol.IServerMessage;
 
 /**
  * This message is sent by server to inform clients that the game is ready and is going to be started.

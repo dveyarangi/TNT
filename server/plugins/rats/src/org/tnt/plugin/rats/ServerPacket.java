@@ -2,7 +2,7 @@ package org.tnt.plugin.rats;
 
 import io.netty.buffer.ByteBuf;
 
-import org.tnt.network.realtime.IServerPacket;
+import org.tnt.realtime.IServerPacket;
 
 
 /**

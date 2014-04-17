@@ -1,4 +1,4 @@
-package org.tnt.network;
+package org.tnt.network.protocol;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -13,9 +13,8 @@ import java.util.concurrent.ThreadFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.tnt.bootstrap.IShutdownHook;
+import org.tnt.IShutdownHook;
 import org.tnt.config.NetworkConfig;
-import org.tnt.network.auth.IAuthenticator;
 
 import com.spinn3r.log5j.Logger;
 

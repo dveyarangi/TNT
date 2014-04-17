@@ -1,4 +1,4 @@
-package org.tnt.network.auth;
+package org.tnt.network.login;
 
 import com.google.gson.annotations.SerializedName;
 

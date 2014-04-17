@@ -1,4 +1,4 @@
-package org.tnt.network;
+package org.tnt.network.protocol;
 
 public interface INetworkThread extends Runnable
 {

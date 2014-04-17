@@ -1,4 +1,4 @@
-package org.tnt.hub;
+package org.tnt.network.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -9,9 +9,9 @@ import io.netty.util.ReferenceCountUtil;
 
 import java.nio.charset.Charset;
 
-import org.tnt.account.Player;
-import org.tnt.network.IClientMessage;
-import org.tnt.network.IServerMessage;
+import org.tnt.account.IPlayer;
+import org.tnt.network.protocol.IClientMessage;
+import org.tnt.network.protocol.IServerMessage;
 import org.tnt.util.AbstractElementAdapter;
 
 import com.google.gson.Gson;
@@ -24,19 +24,15 @@ import com.spinn3r.log5j.Logger;
  * 
  * @author fimar
  */
-public class HubProtocolHandler extends ChannelInboundHandlerAdapter
+public class JsonProtocolHandler extends ChannelInboundHandlerAdapter
 {
-	private final static Logger		log				= Logger.getLogger( HubProtocolHandler.class );
+	private final static Logger		log				= Logger.getLogger( JsonProtocolHandler.class );
 
 	/**
 	 * Handler name in netty pipeline
 	 */
 	public static final String		NAME			= "admin";
 
-	/**
-	 * Multiplayer service
-	 */
-	private final IHub	hub;
 
 	/**
 	 * Json encoder/decoder
@@ -59,7 +55,7 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	/**
 	 * Player that is managed by this handler.
 	 */
-	private final Player					player;
+	private final IPlayer					player;
 
 	/**
 	 * Network channel this handler manages.
@@ -67,10 +63,8 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 	private final Channel					channel;
 
 	//TODO: make hall's protocol handdlers not able to control
-	public HubProtocolHandler( final Channel channel, final IHub hub, final Player player )
+	public JsonProtocolHandler( final Channel channel, final IPlayer player )
 	{
-
-		this.hub = hub;
 
 		this.channel = channel;
 
@@ -86,19 +80,6 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 		this.outGson = new GsonBuilder().create();
 	}
 
-	@Override
-	public void channelActive( final ChannelHandlerContext ctx ) throws Exception
-	{
-		// TODO: check out
-	}
-
-	@Override
-	public void channelInactive( final ChannelHandlerContext ctx ) throws Exception
-	{
-		// dropping player from the orchestrator:
-		hub.playerDisconnected( player );
-	}
-
 	/**
 	 * Reads incoming client JSON messages and executes their corresponding
 	 * methods.
@@ -112,29 +93,21 @@ public class HubProtocolHandler extends ChannelInboundHandlerAdapter
 		// we are using raw bytebuf channel:
 		ByteBuf buffer = (ByteBuf) msg;
 
-		try
-		{
-			// TODO: stream through reader instead:
-			String jsonStr = buffer.toString( ENCODING );
+		// TODO: stream through reader instead:
+		String jsonStr = buffer.toString( ENCODING );
 
-			log.trace( "Reading from client " + player + " <<< " + jsonStr );
+		log.trace( "Reading from client " + player + " <<< " + jsonStr );
 
-			// we will get a concrete message instance here:
-			IClientMessage message = inGson.fromJson( jsonStr, IClientMessage.class );
+		// we will get a concrete message instance here:
+		IClientMessage message = inGson.fromJson( jsonStr, IClientMessage.class );
 
 
-			// executing message logic:
-			message.process( player, hub );
+		// executing message logic:
+		// TODO: messages as actions
+		//		message.process( player, hub );
 
-		}
-		catch( HubException e )
-		{
-			writeError( e );
-		}
-		finally
-		{
-			ReferenceCountUtil.release( msg );
-		}
+		ReferenceCountUtil.release( msg );
+
 	}
 
 	/**

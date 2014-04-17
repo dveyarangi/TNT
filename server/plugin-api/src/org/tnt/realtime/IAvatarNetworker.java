@@ -1,4 +1,4 @@
-package org.tnt.network.realtime;
+package org.tnt.realtime;
 
 import io.netty.channel.ChannelInboundHandler;
 

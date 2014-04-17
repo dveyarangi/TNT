@@ -1,12 +1,13 @@
 /**
  * 
  */
-package org.tnt.network.auth;
+package org.tnt.network.login;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringEncoder;
@@ -21,8 +22,9 @@ import javax.inject.Singleton;
 import org.tnt.account.IPlayer;
 import org.tnt.account.IPlayerStore;
 import org.tnt.hub.PlayerHubDriver;
-import org.tnt.network.IPlayerConnections;
-import org.tnt.network.IPlayerProtocol;
+import org.tnt.network.protocol.IAuthenticator;
+import org.tnt.network.protocol.IPlayerConnections;
+import org.tnt.network.protocol.IPlayerProtocol;
 
 import com.google.gson.Gson;
 import com.spinn3r.log5j.Logger;
@@ -39,7 +41,7 @@ import com.spinn3r.log5j.Logger;
  */
 @Sharable
 @Singleton
-public class AuthHandler extends ChannelInboundHandlerAdapter implements IAuthenticator
+public class AuthHandler extends  ChannelInitializer <SocketChannel> implements IAuthenticator
 {
 	private final static Logger log = Logger.getLogger(AuthHandler.class);
 
@@ -162,6 +164,12 @@ public class AuthHandler extends ChannelInboundHandlerAdapter implements IAuthen
 			log.debug( "Auth failed: terminating client connection." );
 			ctx.close();
 		}
+	}
+
+	@Override
+	protected void initChannel(final SocketChannel ch) throws Exception {
+		// TODO Auto-generated method stub
+
 	}
 
 }

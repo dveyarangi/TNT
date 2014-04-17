@@ -1,4 +1,4 @@
-package org.tnt.network;
+package org.tnt.network.protocol;
 
 /**
  * Marker interface for server admin messages

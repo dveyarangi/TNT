@@ -1,4 +1,4 @@
-package org.tnt.bootstrap;
+package org.tnt;
 
 public interface IShutdownHook extends Runnable
 {

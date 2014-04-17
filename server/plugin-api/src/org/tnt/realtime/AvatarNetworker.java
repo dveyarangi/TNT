@@ -1,4 +1,4 @@
-package org.tnt.network.realtime;
+package org.tnt.realtime;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

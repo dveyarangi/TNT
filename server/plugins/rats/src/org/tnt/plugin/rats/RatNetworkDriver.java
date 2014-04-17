@@ -5,7 +5,7 @@ import io.netty.channel.Channel;
 
 import org.tnt.multiplayer.IAvatar;
 import org.tnt.multiplayer.IAvatarAction;
-import org.tnt.network.realtime.AvatarNetworker;
+import org.tnt.realtime.AvatarNetworker;
 
 public class RatNetworkDriver extends AvatarNetworker
 {

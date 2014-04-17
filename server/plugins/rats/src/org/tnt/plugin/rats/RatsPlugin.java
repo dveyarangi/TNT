@@ -9,7 +9,7 @@ import org.tnt.game.IGameSimulator;
 import org.tnt.multiplayer.IArena;
 import org.tnt.multiplayer.IAvatar;
 import org.tnt.multiplayer.IAvatarDriver;
-import org.tnt.network.realtime.IAvatarNetworker;
+import org.tnt.realtime.IAvatarNetworker;
 
 @GamePlugin
 public class RatsPlugin implements IGamePlugin

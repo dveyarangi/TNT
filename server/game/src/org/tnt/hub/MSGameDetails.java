@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.tnt.account.Character;
-import org.tnt.network.IServerMessage;
+import org.tnt.network.protocol.IServerMessage;
 
 /**
  * This message is sent by server to inform client about his game room.

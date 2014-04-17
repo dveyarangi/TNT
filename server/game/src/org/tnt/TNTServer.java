@@ -1,15 +1,15 @@
 package org.tnt;
 
+import org.tnt.account.DataStoreModule;
 import org.tnt.account.IPlayerStore;
-import org.tnt.bootstrap.BootstrapModule;
-import org.tnt.bootstrap.IShutdownHook;
 import org.tnt.config.TNTConfig;
 import org.tnt.debug.Debug;
 import org.tnt.game.GameModule;
 import org.tnt.game.IGameFactory;
 import org.tnt.halls.IHalls;
-import org.tnt.network.INetworkThread;
-import org.tnt.network.NetworkModule;
+import org.tnt.network.login.LoginModule;
+import org.tnt.network.protocol.INetworkThread;
+import org.tnt.network.protocol.NetworkModule;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -89,9 +89,10 @@ public class TNTServer extends Thread implements ITNTServer, IShutdownHook
 
 		Module serverModule = Modules.combine(
 				new BootstrapModule(),
-				new GameModule(),
-				new NetworkModule()
-				);
+				new DataStoreModule(),
+				new LoginModule(),
+				new NetworkModule(),
+				new GameModule());
 
 		Injector injector = Guice.createInjector( serverModule );
 

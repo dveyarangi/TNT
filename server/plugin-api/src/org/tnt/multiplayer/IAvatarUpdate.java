@@ -1,7 +1,7 @@
 package org.tnt.multiplayer;
 
 import org.tnt.game.GameSimulator;
-import org.tnt.network.realtime.IServerPacket;
+import org.tnt.realtime.IServerPacket;
 
 
 /**

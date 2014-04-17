@@ -3,7 +3,7 @@ package org.tnt.hub;
 import javax.inject.Singleton;
 
 import org.tnt.multiplayer.network.NettyNetwork;
-import org.tnt.network.INetworkThread;
+import org.tnt.network.protocol.INetworkThread;
 
 import com.google.inject.AbstractModule;
 

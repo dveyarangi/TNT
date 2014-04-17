@@ -6,7 +6,7 @@ package org.tnt.hub;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.tnt.network.IServerMessage;
+import org.tnt.network.protocol.IServerMessage;
 
 import com.spinn3r.log5j.Logger;
 

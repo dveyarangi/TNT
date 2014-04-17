@@ -10,9 +10,10 @@ import io.netty.handler.codec.Delimiters;
 import org.tnt.account.Player;
 import org.tnt.game.IGameResults;
 import org.tnt.multiplayer.IAvatarDriver;
-import org.tnt.network.realtime.AvatarNetworker;
-import org.tnt.network.realtime.IAvatarNetworker;
+import org.tnt.network.util.JsonProtocolHandler;
 import org.tnt.realtime.Avatar;
+import org.tnt.realtime.AvatarNetworker;
+import org.tnt.realtime.IAvatarNetworker;
 
 import com.spinn3r.log5j.Logger;
 /**
@@ -47,7 +48,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 	/**
 	 * Admin protocol handler instance.
 	 */
-	private HubProtocolHandler hubHandler;
+	private JsonProtocolHandler hubHandler;
 
 	/**
 	 * Multiplayer hub
@@ -104,7 +105,7 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 		// are managed by {@link IngameProtocoHandler}
 		// removing hub protocol handlers:
 		pipeline.remove( FRAME );
-		pipeline.remove( HubProtocolHandler.NAME );
+		pipeline.remove( JsonProtocolHandler.NAME );
 
 
 		// registering ingame protocol handler:
@@ -143,12 +144,12 @@ public class PlayerHubDriver extends ChannelInboundHandlerAdapter implements IPl
 
 		// registering hub protocol handlers:
 		if(hubHandler == null) {
-			hubHandler = new HubProtocolHandler( channel, hub, player );
+			hubHandler = new JsonProtocolHandler( channel, hub, player );
 		}
 		activeHandler = hubHandler;
 
 		pipeline.addLast( FRAME,                     new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ) );
-		pipeline.addLast( HubProtocolHandler.NAME, hubHandler );
+		pipeline.addLast( JsonProtocolHandler.NAME, hubHandler );
 	}
 
 	@Override

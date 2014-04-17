@@ -1,4 +1,5 @@
-package org.tnt.network;
+package org.tnt.network.protocol;
+
 
 
 public class MSError implements IServerMessage
