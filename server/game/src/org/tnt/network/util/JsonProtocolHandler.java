@@ -10,7 +10,7 @@ import io.netty.util.ReferenceCountUtil;
 import java.nio.charset.Charset;
 
 import org.tnt.account.IPlayer;
-import org.tnt.network.protocol.IClientMessage;
+import org.tnt.network.codec.IClientMessage;
 import org.tnt.network.protocol.IServerMessage;
 import org.tnt.util.AbstractElementAdapter;
 

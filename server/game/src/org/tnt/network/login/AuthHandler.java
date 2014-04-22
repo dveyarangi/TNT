@@ -80,7 +80,7 @@ public class AuthHandler extends  ChannelInitializer <SocketChannel> implements 
 		ctx.pipeline().addLast( "frame", new DelimiterBasedFrameDecoder( 2048, Delimiters.lineDelimiter() ));
 		ctx.pipeline().addLast( "encoder", new StringEncoder());
 
-		log.trace( "Client channel is open and waiting for authentication: " + ctx.channel().toString() );
+		log.trace( "Client channel is open and waiting for authentication: %s", ctx.channel().toString() );
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class AuthHandler extends  ChannelInitializer <SocketChannel> implements 
 			credentials = doAuthenticate( message );
 			if(credentials == null)
 			{
-				log.warn( "Auth failed: unknown player (id " + message.getPlayerId() + ")");
+				log.warn( "Auth failed: unknown player (id %d)", message.getPlayerId());
 				writeAuthResult( ctx, MSAuthResult.FAILED_UNKNOWN_PLAYER );
 				return;
 			}
@@ -138,7 +138,7 @@ public class AuthHandler extends  ChannelInitializer <SocketChannel> implements 
 		writeAuthResult( ctx,  MSAuthResult.OK );
 
 		// auth handler is no longer needed:
-		ctx.pipeline().remove( NAME );
+		ctx.pipeline().remove( this );
 		ctx.pipeline().addLast( protocol );
 
 	}
@@ -168,8 +168,7 @@ public class AuthHandler extends  ChannelInitializer <SocketChannel> implements 
 
 	@Override
 	protected void initChannel(final SocketChannel ch) throws Exception {
-		// TODO Auto-generated method stub
-
+		// NOOP
 	}
 
 }

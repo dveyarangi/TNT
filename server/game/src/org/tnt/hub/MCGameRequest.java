@@ -1,7 +1,7 @@
 package org.tnt.hub;
 
 import org.tnt.account.Player;
-import org.tnt.network.protocol.IClientMessage;
+import org.tnt.network.codec.IClientMessage;
 
 /**
  * Game request message from client.

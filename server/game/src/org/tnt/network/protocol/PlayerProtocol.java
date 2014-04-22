@@ -9,8 +9,8 @@ import io.netty.channel.ChannelPromise;
 import javax.inject.Inject;
 
 import org.tnt.account.IPlayer;
-import org.tnt.halls.IHall;
-import org.tnt.halls.IHalls;
+import org.tnt.network.codec.ICodec;
+import org.tnt.network.codec.ICodecMap;
 
 import com.google.gson.Gson;
 import com.google.inject.assistedinject.Assisted;
@@ -29,7 +29,7 @@ public class PlayerProtocol extends ChannelDuplexHandler implements IPlayerProto
 
 	private Channel channel;
 
-	private IHalls halls;
+	private final ICodecMap serializers;
 
 	private Gson outGson;
 
@@ -38,15 +38,21 @@ public class PlayerProtocol extends ChannelDuplexHandler implements IPlayerProto
 	@Inject public PlayerProtocol(
 			@Assisted final IPlayer player,
 			@Assisted final Channel channel,
-			final IHalls halls)
+			final ICodecMap serializers)
 	{
 		this.player = player;
 		this.channel = channel;
-		this.halls = halls;
+
+		this.serializers = serializers;
 
 		this.outGson = new Gson();
 	}
 
+
+	@Override
+	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+		isActive = true;
+	}
 
 	/**
 	 * Called when client disconnection happens
@@ -68,18 +74,17 @@ public class PlayerProtocol extends ChannelDuplexHandler implements IPlayerProto
 	{
 		ByteBuf buffer = (ByteBuf) msg;
 
-		int hallId = buffer.readByte();
+		int id = buffer.readByte();
 
-		IHall hall = halls.getHall( hallId);
+		ICodec <?> codec = serializers.getCodec( id );
 
-		hall.read( buffer );
+		codec.read( buffer );
 	}
 
 
 	@Override
 	public void stop(final MSClose reason)
 	{
-		// write game start to game room participant
 		write( 0, reason );
 		channel.close();
 	}

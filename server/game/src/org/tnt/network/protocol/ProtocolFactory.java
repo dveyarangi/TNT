@@ -5,21 +5,21 @@ import io.netty.channel.Channel;
 import javax.inject.Inject;
 
 import org.tnt.account.IPlayer;
-import org.tnt.halls.IHalls;
+import org.tnt.network.codec.ICodecMap;
 
 public class ProtocolFactory implements IProtocolFactory
 {
-	private final IHalls halls;
+	private final final ICodecMap serializers;
 
-	@Inject public ProtocolFactory(final IHalls halls)
+	@Inject public ProtocolFactory(final ICodecMap serializers)
 	{
-		this.halls = halls;
+		this.serializers = serializers;
 	}
 
 	@Override
 	public IPlayerProtocol create(final IPlayer player, final Channel channel)
 	{
-		return new PlayerProtocol(player, channel, halls);
+		return new PlayerProtocol(player, channel, serializers);
 	}
 
 }

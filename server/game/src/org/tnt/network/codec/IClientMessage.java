@@ -1,4 +1,4 @@
-package org.tnt.network.protocol;
+package org.tnt.network.codec;
 
 import org.tnt.account.Player;
 

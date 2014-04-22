@@ -1,6 +1,7 @@
 package org.tnt.network.protocol;
 
 import org.tnt.account.Player;
+import org.tnt.network.codec.IClientMessage;
 
 /**
  * Game quit message from client.
